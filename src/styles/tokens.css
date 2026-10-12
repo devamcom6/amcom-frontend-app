@@ -1,0 +1,125 @@
+/*
+ * Design tokens extracted from docs/amcom-ui.
+ * Every colour, radius and spacing value used by components should come from here.
+ */
+:root {
+  /* Brand */
+  --color-primary: #2e6f62;
+  --color-primary-hover: #255b50;
+  --color-primary-active: #1d4a41;
+  --color-primary-soft: #eef6f3;
+  --color-primary-tint: #f1f9ea;
+  --color-olive: #4d662a;
+  --color-maroon: #4a2117;
+  --color-terracotta: #c26d50;
+  --color-terracotta-hover: #ad5d42;
+  --color-lime: #6dba3a;
+  --color-lime-hover: #5ea630;
+
+  /* Text */
+  --color-ink: #1e2229;
+  --color-body: #444a48;
+  --color-muted: #606069;
+  --color-subtle: #8a8f98;
+  --color-inverse: #ffffff;
+
+  /* Surfaces */
+  --color-bg: #ffffff;
+  --color-page: #f9f9fa;
+  --color-section: #f1f1f1;
+  --color-cta: #fffdfd;
+  --color-summary: #fbf8ff;
+  --color-summary-border: #ded6ec;
+  --color-quote: #f7f6f2;
+  --color-info-bg: #ededf2;
+  --color-overlay: rgba(17, 20, 24, 0.32);
+
+  /* Borders */
+  --color-border: #d9d9d9;
+  --color-border-strong: #b9bdbb;
+  --color-border-subtle: #e8e9eb;
+  --color-nav-border: #c4c9c7;
+
+  /* Status */
+  --color-success: #4caf50;
+  --color-success-strong: #498e18;
+  --color-success-bg: #f1f9ea;
+  --color-success-border: #82c341;
+  --color-badge-green: #d8efc6;
+  --color-badge-green-text: #2f5d15;
+  --color-warning: #d97706;
+  --color-warning-bg: #fffbeb;
+  --color-warning-soft: #fff2e0;
+  --color-warning-border: #fcd34d;
+  --color-progress: #f0a500;
+  --color-danger: #dc2626;
+  --color-danger-strong: #b91c1c;
+  --color-danger-bg: #fdeaea;
+  --color-info: #2563eb;
+  --color-neutral-bg: #f3f4f6;
+  --color-neutral-text: #9ca3af;
+
+  /* Typography */
+  --font-sans: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.125rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.875rem;
+  --text-3xl: 2.25rem;
+  --text-4xl: 3rem;
+  --text-5xl: 4rem;
+
+  /* Radius */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-3xl: 32px;
+  --radius-pill: 999px;
+
+  /* Elevation */
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-sm: 0 2px 8px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 8px 24px rgba(16, 24, 40, 0.08);
+  --shadow-lg: 0 16px 48px rgba(16, 24, 40, 0.14);
+
+  /* Layout */
+  --container: 1312px;
+  --container-narrow: 1152px;
+  --container-form: 1216px;
+  --gutter: 16px;
+  --header-height: 76px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --duration-fast: 120ms;
+  --duration: 200ms;
+  --duration-slow: 320ms;
+
+  --focus-ring: 0 0 0 3px rgba(46, 111, 98, 0.28);
+  --z-header: 40;
+  --z-dropdown: 50;
+  --z-modal: 60;
+  --z-toast: 70;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 32px;
+    --header-height: 96px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --gutter: 64px;
+  }
+}

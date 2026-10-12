@@ -1,0 +1,146 @@
+{
+  "estate-greenlush-aerial": {
+    "width": 608,
+    "height": 348,
+    "dominant_color": "#697133",
+    "variants": {
+      "480": "/mock-media/estate-greenlush-aerial-480.webp"
+    },
+    "thumbnail": "/mock-media/estate-greenlush-aerial-thumb.webp"
+  },
+  "estate-greenlush": {
+    "width": 416,
+    "height": 320,
+    "dominant_color": "#888d83",
+    "variants": {
+      "416": "/mock-media/estate-greenlush-416.webp"
+    },
+    "thumbnail": "/mock-media/estate-greenlush-thumb.webp"
+  },
+  "estate-ridgewood": {
+    "width": 416,
+    "height": 318,
+    "dominant_color": "#a1b0b9",
+    "variants": {
+      "416": "/mock-media/estate-ridgewood-416.webp"
+    },
+    "thumbnail": "/mock-media/estate-ridgewood-thumb.webp"
+  },
+  "estate-devilla": {
+    "width": 416,
+    "height": 320,
+    "dominant_color": "#80887f",
+    "variants": {
+      "416": "/mock-media/estate-devilla-416.webp"
+    },
+    "thumbnail": "/mock-media/estate-devilla-thumb.webp"
+  },
+  "property-tower": {
+    "width": 770,
+    "height": 504,
+    "dominant_color": "#8e7f71",
+    "variants": {
+      "480": "/mock-media/property-tower-480.webp"
+    },
+    "thumbnail": "/mock-media/property-tower-thumb.webp"
+  },
+  "property-living": {
+    "width": 900,
+    "height": 764,
+    "dominant_color": "#9a867a",
+    "variants": {
+      "480": "/mock-media/property-living-480.webp"
+    },
+    "thumbnail": "/mock-media/property-living-thumb.webp"
+  },
+  "property-lounge": {
+    "width": 470,
+    "height": 247,
+    "dominant_color": "#a1a19b",
+    "variants": {
+      "470": "/mock-media/property-lounge-470.webp"
+    },
+    "thumbnail": "/mock-media/property-lounge-thumb.webp"
+  },
+  "property-terrace": {
+    "width": 470,
+    "height": 247,
+    "dominant_color": "#73624c",
+    "variants": {
+      "470": "/mock-media/property-terrace-470.webp"
+    },
+    "thumbnail": "/mock-media/property-terrace-thumb.webp"
+  },
+  "property-bedroom": {
+    "width": 253,
+    "height": 184,
+    "dominant_color": "#968270",
+    "variants": {
+      "253": "/mock-media/property-bedroom-253.webp"
+    },
+    "thumbnail": "/mock-media/property-bedroom-thumb.webp"
+  },
+  "property-kitchen": {
+    "width": 253,
+    "height": 184,
+    "dominant_color": "#87857f",
+    "variants": {
+      "253": "/mock-media/property-kitchen-253.webp"
+    },
+    "thumbnail": "/mock-media/property-kitchen-thumb.webp"
+  },
+  "property-bathroom": {
+    "width": 253,
+    "height": 184,
+    "dominant_color": "#7f7361",
+    "variants": {
+      "253": "/mock-media/property-bathroom-253.webp"
+    },
+    "thumbnail": "/mock-media/property-bathroom-thumb.webp"
+  },
+  "property-building": {
+    "width": 253,
+    "height": 184,
+    "dominant_color": "#8a7b69",
+    "variants": {
+      "253": "/mock-media/property-building-253.webp"
+    },
+    "thumbnail": "/mock-media/property-building-thumb.webp"
+  },
+  "property-apartments": {
+    "width": 640,
+    "height": 336,
+    "dominant_color": "#877862",
+    "variants": {
+      "480": "/mock-media/property-apartments-480.webp"
+    },
+    "thumbnail": "/mock-media/property-apartments-thumb.webp"
+  },
+  "property-villa": {
+    "width": 640,
+    "height": 336,
+    "dominant_color": "#81724f",
+    "variants": {
+      "480": "/mock-media/property-villa-480.webp"
+    },
+    "thumbnail": "/mock-media/property-villa-thumb.webp"
+  },
+  "property-mansion": {
+    "width": 607,
+    "height": 368,
+    "dominant_color": "#787659",
+    "variants": {
+      "480": "/mock-media/property-mansion-480.webp"
+    },
+    "thumbnail": "/mock-media/property-mansion-thumb.webp"
+  },
+  "property-estate-row": {
+    "width": 370,
+    "height": 160,
+    "dominant_color": "#948370",
+    "variants": {
+      "370": "/mock-media/property-estate-row-370.webp"
+    },
+    "thumbnail": "/mock-media/property-estate-row-thumb.webp"
+  }
+}
