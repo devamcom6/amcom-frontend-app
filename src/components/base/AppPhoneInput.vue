@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, useId, watch } from 'vue'
 import AppField from './AppField.vue'
+import AppSelect from './AppSelect.vue'
 
 /**
  * Phone input with a +234 country prefix (design: "Phone Number (Preferably Whatsapp)").
@@ -31,6 +32,7 @@ function split(value: string) {
 const initial = split(model.value ?? '')
 const code = ref(initial.code)
 const local = ref(initial.local)
+const current = computed(() => COUNTRIES.find((c) => c.code === code.value) ?? COUNTRIES[0]!)
 
 watch([code, local], () => {
   const digits = local.value.replace(/[^\d]/g, '').replace(/^0/, '')
@@ -49,13 +51,17 @@ watch(model, (v) => {
 <template>
   <AppField :id="inputId" :label="label" :hint="hint" :error="error" :required="required">
     <div class="phone" :class="{ 'is-invalid': !!error }">
-      <label class="phone__country">
-        <span class="sr-only">Country code</span>
-        <span class="phone__flag" aria-hidden="true">{{ COUNTRIES.find((c) => c.code === code)?.flag }}</span>
-        <select v-model="code" class="phone__select">
-          <option v-for="c in COUNTRIES" :key="c.code" :value="c.code">{{ c.code }}</option>
-        </select>
-      </label>
+      <AppSelect
+        v-model="code"
+        class="phone__country"
+        variant="filter"
+        size="sm"
+        label="Country code"
+        hide-label
+        search-placeholder="Search country"
+        :trigger-label="`${current.flag} ${current.code}`"
+        :options="COUNTRIES.map((c) => ({ value: c.code, label: `${c.flag} ${c.name} (${c.code})` }))"
+      />
       <input
         :id="inputId"
         v-model="local"
@@ -95,26 +101,17 @@ watch(model, (v) => {
 }
 
 .phone__country {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 8px 0 12px;
+  flex-shrink: 0;
   background: var(--color-page);
   border-right: 1px solid var(--color-border-subtle);
 }
 
-.phone__select {
+.phone__country :deep(.select__trigger) {
+  height: 100%;
   border: 0;
+  border-radius: 0;
   background: transparent;
-  font-size: var(--text-sm);
-  color: var(--color-ink);
-  padding-right: 2px;
-  cursor: pointer;
-}
-
-.phone__select:focus {
-  outline: none;
+  box-shadow: none;
 }
 
 .phone__input {

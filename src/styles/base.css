@@ -93,7 +93,42 @@ button {
   padding: 0;
 }
 
-button:disabled {
+/* Every interactive control shows the hand pointer; disabled ones show not-allowed. */
+button,
+[role='button'],
+[role='tab'],
+[role='switch'],
+[role='radio'],
+[role='checkbox'],
+[role='option'],
+[role='menuitem'],
+[role='combobox']:not(input),
+a[href],
+label:has(> input[type='checkbox']),
+label:has(> input[type='radio']),
+select,
+summary,
+input[type='checkbox'],
+input[type='radio'],
+input[type='file'],
+input[type='submit'],
+input[type='button'],
+input[type='reset'],
+input[type='range'],
+input[type='date']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+button:disabled,
+button[aria-disabled='true'],
+a[aria-disabled='true'],
+[role='button'][aria-disabled='true'],
+[role='tab'][aria-disabled='true'],
+[role='option'][aria-disabled='true'],
+select:disabled,
+input:disabled,
+fieldset:disabled button,
+label:has(> input:disabled) {
   cursor: not-allowed;
 }
 

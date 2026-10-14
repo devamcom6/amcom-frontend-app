@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppSelect from '@/components/base/AppSelect.vue'
 import { computed, ref } from 'vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppEmptyState from '@/components/base/AppEmptyState.vue'
@@ -71,14 +72,7 @@ function applyFilters(f: FilterState) {
             <span class="sr-only">Search properties</span>
             <input v-model="list.search.value" type="search" placeholder="Search by title or area" />
           </label>
-          <label class="browse__sort hide-mobile">
-            <span class="sr-only">Sort by</span>
-            <select v-model="list.sort.value">
-              <option value="">Newest</option>
-              <option value="price_asc">Price: low to high</option>
-              <option value="price_desc">Price: high to low</option>
-            </select>
-          </label>
+          <AppSelect v-model="list.sort.value" variant="filter" label="Sort by" hide-label empty-label="Newest" class="browse__sort hide-mobile" :options="[{ value: 'price_asc', label: 'Price: low to high' }, { value: 'price_desc', label: 'Price: high to low' }]" />
           <button type="button" class="browse__filter" :aria-label="`Filters${activeCount ? `, ${activeCount} active` : ''}`" @click="filterOpen = true">
             <AppIcon name="sliders" :size="22" />
             <span v-if="activeCount" class="browse__filter-count">{{ activeCount }}</span>
@@ -178,14 +172,6 @@ function applyFilters(f: FilterState) {
   box-shadow: var(--focus-ring);
 }
 
-.browse__sort select {
-  height: 48px;
-  padding: 0 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-bg);
-  font-size: var(--text-sm);
-}
 
 .browse__filter {
   position: relative;

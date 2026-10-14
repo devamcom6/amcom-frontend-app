@@ -4,6 +4,7 @@ import { PAGE_SIZE_OPTIONS } from '@/constants/options'
 import type { PaginationMeta } from '@/types'
 import { formatNumber } from '@/utils/format'
 import AppIcon from './AppIcon.vue'
+import AppSelect from './AppSelect.vue'
 
 const props = withDefaults(defineProps<{ meta: PaginationMeta; showPageSize?: boolean; label?: string }>(), {
   label: 'results',
@@ -25,6 +26,11 @@ const pages = computed<(number | '…')[]>(() => {
   return out
 })
 
+function onPerPage(v: number | '') {
+  perPage.value = Number(v)
+  page.value = 1
+}
+
 function go(p: number) {
   if (p < 1 || p > props.meta.last_page || p === page.value) return
   page.value = p
@@ -38,12 +44,17 @@ function go(p: number) {
       <strong>{{ formatNumber(meta.total) }}</strong> {{ label }}
     </p>
     <div class="pagination__controls">
-      <label v-if="showPageSize && perPage !== undefined" class="pagination__size">
-        <span class="sr-only">Rows per page</span>
-        <select v-model.number="perPage" @change="page = 1">
-          <option v-for="n in PAGE_SIZE_OPTIONS" :key="n" :value="n">{{ n }} / page</option>
-        </select>
-      </label>
+      <AppSelect
+        v-if="showPageSize && perPage !== undefined"
+        class="pagination__size"
+        :model-value="perPage"
+        variant="filter"
+        size="sm"
+        label="Rows per page"
+        hide-label
+        :options="PAGE_SIZE_OPTIONS.map((n) => ({ value: n, label: `${n} / page` }))"
+        @change="onPerPage"
+      />
       <button type="button" class="pagination__btn" :disabled="meta.current_page <= 1" aria-label="Previous page" @click="go(meta.current_page - 1)">
         <AppIcon name="chevron-left" :size="18" />
       </button>
@@ -121,13 +132,8 @@ function go(p: number) {
   padding: 0 4px;
 }
 
-.pagination__size select {
-  height: 36px;
+.pagination__size {
   margin-right: 8px;
-  padding: 0 10px;
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg);
 }
 
 @media (max-width: 640px) {

@@ -25,6 +25,21 @@ const props = withDefaults(
 
 const tag = computed(() => (props.to ? 'RouterLink' : props.href ? 'a' : 'button'))
 const isDisabled = computed(() => props.disabled || props.loading)
+
+// Only bind the attributes that belong to the rendered element. Passing `href` (even undefined)
+// to RouterLink would override the URL it computes, leaving the <a> without an href.
+const tagAttrs = computed(() => {
+  if (tag.value === 'RouterLink') return { to: props.to }
+  if (tag.value === 'a') return { href: props.href }
+  return { type: props.type, disabled: isDisabled.value }
+})
+/** Links can't be natively disabled — swallow clicks so a disabled link-button doesn't navigate. */
+function blockIfDisabled(e: MouseEvent) {
+  if (isDisabled.value && tag.value !== 'button') {
+    e.preventDefault()
+    e.stopImmediatePropagation()
+  }
+}
 const iconSize = computed(() => (props.size === 'sm' ? 16 : 18))
 </script>
 
@@ -33,13 +48,11 @@ const iconSize = computed(() => (props.size === 'sm' ? 16 : 18))
     :is="tag"
     class="btn"
     :class="[`btn--${variant}`, `btn--${size}`, { 'btn--block': block, 'is-loading': loading }]"
-    :to="to"
-    :href="href"
-    :type="tag === 'button' ? type : undefined"
-    :disabled="tag === 'button' ? isDisabled : undefined"
+    v-bind="tagAttrs"
     :aria-disabled="isDisabled || undefined"
     :aria-busy="loading || undefined"
     :tabindex="tag !== 'button' && isDisabled ? -1 : undefined"
+    @click.capture="blockIfDisabled"
   >
     <AppSpinner v-if="loading" :size="iconSize - 2" :label="loadingLabel" />
     <AppIcon v-else-if="iconLeft" :name="iconLeft" :size="iconSize" />

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppSelect from '@/components/base/AppSelect.vue'
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppButton from '@/components/base/AppButton.vue'
@@ -75,38 +76,13 @@ function payHolding(h: PropertyHolding) {
         ]"
       />
       <div v-if="tab === 'listings'" class="pm__filters">
-        <label class="pm__select"><span class="sr-only">Listing type</span>
-          <select v-model="listings.filters.listing_type">
-            <option value="">All listing</option>
-            <option v-for="o in LISTING_TYPE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
-          </select>
-        </label>
-        <label class="pm__select"><span class="sr-only">Property type</span>
-          <select v-model="listings.filters.property_type">
-            <option value="">Property type</option>
-            <option v-for="o in PROPERTY_TYPE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
-          </select>
-        </label>
-        <label class="pm__select"><span class="sr-only">Status</span>
-          <select v-model="listings.filters.status">
-            <option value="">Status</option>
-            <option v-for="o in LISTING_STATUSES" :key="o.value" :value="o.value">{{ o.label }}</option>
-          </select>
-        </label>
+        <AppSelect v-model="listings.filters.listing_type" variant="filter" label="Listing type" hide-label empty-label="All listing" :options="LISTING_TYPE_OPTIONS" />
+        <AppSelect v-model="listings.filters.property_type" variant="filter" label="Property type" hide-label empty-label="Property type" :options="PROPERTY_TYPE_OPTIONS" />
+        <AppSelect v-model="listings.filters.status" variant="filter" label="Status" hide-label empty-label="Status" :options="LISTING_STATUSES" />
       </div>
       <div v-else class="pm__filters">
-        <label class="pm__select"><span class="sr-only">Holding type</span>
-          <select v-model="holdings.filters.holding_type">
-            <option value="">All listing</option>
-            <option v-for="o in HOLDING_TYPES" :key="o.value" :value="o.value">{{ o.label }}</option>
-          </select>
-        </label>
-        <label class="pm__select"><span class="sr-only">Status</span>
-          <select v-model="holdings.filters.status">
-            <option value="">Status</option>
-            <option v-for="o in HOLDING_STATUSES" :key="o.value" :value="o.value">{{ o.label }}</option>
-          </select>
-        </label>
+        <AppSelect v-model="holdings.filters.holding_type" variant="filter" label="Holding type" hide-label empty-label="All listing" :options="HOLDING_TYPES" />
+        <AppSelect v-model="holdings.filters.status" variant="filter" label="Status" hide-label empty-label="Status" :options="HOLDING_STATUSES" />
       </div>
     </div>
 
@@ -168,24 +144,7 @@ function payHolding(h: PropertyHolding) {
   gap: 12px;
 }
 
-.pm__select select {
-  height: 38px;
-  padding: 0 36px 0 16px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background: var(--color-bg)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23444a48' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E")
-    no-repeat right 14px center;
-  font-size: var(--text-sm);
-  color: var(--color-ink);
-  appearance: none;
-  cursor: pointer;
-}
 
-.pm__select select:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
 
 .pm__panel {
   margin-top: 32px;

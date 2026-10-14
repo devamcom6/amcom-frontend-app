@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppSelect from '@/components/base/AppSelect.vue'
 import AdminToolbar from '@/components/admin/AdminToolbar.vue'
 import AppDataTable, { type Column } from '@/components/base/AppDataTable.vue'
 import AppErrorState from '@/components/base/AppErrorState.vue'
@@ -53,12 +54,8 @@ async function update(row: AdminInvestment, status: string) {
 <template>
   <div>
     <AdminToolbar v-model:search="list.search.value" placeholder="Search reference or customer">
-      <label><span class="sr-only">Product</span>
-        <select v-model="list.filters.product"><option value="">All products</option><option value="buyback">Buyback</option><option value="capital_investment">Capital investment</option></select>
-      </label>
-      <label><span class="sr-only">Status</span>
-        <select v-model="list.filters.status"><option value="">All statuses</option><option v-for="s in STATUSES" :key="s" :value="s">{{ humanize(s) }}</option></select>
-      </label>
+      <AppSelect v-model="list.filters.product" variant="filter" label="Product" hide-label empty-label="All products" :options="[{ value: 'buyback', label: 'Buyback' }, { value: 'capital_investment', label: 'Capital investment' }]" />
+      <AppSelect v-model="list.filters.status" variant="filter" label="Status" hide-label empty-label="All statuses" :options="STATUSES.map((s) => ({ value: s, label: humanize(s) }))" />
     </AdminToolbar>
     <AppErrorState v-if="list.error.value" :error="list.error.value" @retry="list.refresh" />
     <template v-else>
@@ -70,13 +67,7 @@ async function update(row: AdminInvestment, status: string) {
         <template #cell-maturity_date="{ row }">{{ formatDate(row.maturity_date) }}</template>
         <template #cell-status="{ row }"><StatusBadge :status="row.status" size="sm" /></template>
         <template v-if="auth.can('investments.manage')" #actions="{ row }">
-          <label v-if="NEXT[row.status]" class="action-select">
-            <span class="sr-only">Change status of {{ row.reference }}</span>
-            <select @change="update(row, ($event.target as HTMLSelectElement).value); ($event.target as HTMLSelectElement).value = ''">
-              <option value="">Update…</option>
-              <option v-for="s in NEXT[row.status]" :key="s" :value="s">Mark {{ humanize(s).toLowerCase() }}</option>
-            </select>
-          </label>
+          <AppSelect v-if="NEXT[row.status]" model-value="" variant="filter" size="sm" :label="`Change status of ${row.reference}`" hide-label placeholder="Update…" :options="(NEXT[row.status] ?? []).map((s) => ({ value: s, label: `Mark ${humanize(s).toLowerCase()}` }))" @change="(v) => update(row, String(v))" />
         </template>
       </AppDataTable>
       <AppPagination v-model:page="list.page.value" v-model:per-page="list.perPage.value" :meta="list.meta.value" label="investments" show-page-size />
@@ -95,12 +86,4 @@ async function update(row: AdminInvestment, status: string) {
   color: var(--color-muted);
 }
 
-.action-select select {
-  height: 32px;
-  padding: 0 8px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg);
-  font-size: var(--text-xs);
-}
 </style>

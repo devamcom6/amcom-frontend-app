@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppSelect from '@/components/base/AppSelect.vue'
 import { reactive, ref } from 'vue'
 import BarChart from '@/components/admin/BarChart.vue'
 import StatTile from '@/components/admin/StatTile.vue'
@@ -50,12 +51,8 @@ const columnsFor = (cols: { key: string; label: string; format?: string }[]): Co
 <template>
   <div>
     <div class="controls">
-      <label class="ctl"><span>Report</span>
-        <select v-model="query.type"><option value="revenue">Revenue</option><option value="investments">Investments</option><option value="users">Users</option><option value="listings">Listings</option></select>
-      </label>
-      <label class="ctl"><span>Group by</span>
-        <select v-model="query.group_by"><option value="day">Day</option><option value="week">Week</option><option value="month">Month</option></select>
-      </label>
+      <AppSelect v-model="query.type" variant="filter" label="Report" class="ctl" :options="[{ value: 'revenue', label: 'Revenue' }, { value: 'investments', label: 'Investments' }, { value: 'users', label: 'Users' }, { value: 'listings', label: 'Listings' }]" />
+      <AppSelect v-model="query.group_by" variant="filter" label="Group by" class="ctl" :options="[{ value: 'day', label: 'Day' }, { value: 'week', label: 'Week' }, { value: 'month', label: 'Month' }]" />
       <label class="ctl"><span>From</span><input v-model="query.from" type="date" :max="query.to" /></label>
       <label class="ctl"><span>To</span><input v-model="query.to" type="date" :min="query.from" /></label>
       <AppButton v-if="auth.can('reports.export')" variant="outline" icon-left="download" :loading="exporting" class="export" @click="exportCsv">Export CSV</AppButton>
@@ -94,7 +91,6 @@ const columnsFor = (cols: { key: string; label: string; format?: string }[]): Co
   color: var(--color-muted);
 }
 
-.ctl select,
 .ctl input {
   height: 40px;
   padding: 0 10px;

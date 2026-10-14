@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppSelect from '@/components/base/AppSelect.vue'
 import AdminToolbar from '@/components/admin/AdminToolbar.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppDataTable, { type Column } from '@/components/base/AppDataTable.vue'
@@ -44,15 +45,8 @@ async function update(row: AdminRequest, payload: { status?: AdminRequest['statu
 <template>
   <div>
     <AdminToolbar v-model:search="list.search.value" placeholder="Search reference, name, subject">
-      <label><span class="sr-only">Type</span>
-        <select v-model="list.filters.kind">
-          <option value="">All types</option>
-          <option v-for="k in ['interest', 'application', 'inspection', 'contact', 'support']" :key="k" :value="k">{{ humanize(k) }}</option>
-        </select>
-      </label>
-      <label><span class="sr-only">Status</span>
-        <select v-model="list.filters.status"><option value="">All statuses</option><option value="new">New</option><option value="in_progress">In progress</option><option value="closed">Closed</option></select>
-      </label>
+      <AppSelect v-model="list.filters.kind" variant="filter" label="Type" hide-label empty-label="All types" :options="['interest', 'application', 'inspection', 'contact', 'support'].map((v) => ({ value: v, label: humanize(v) }))" />
+      <AppSelect v-model="list.filters.status" variant="filter" label="Status" hide-label empty-label="All statuses" :options="[{ value: 'new', label: 'New' }, { value: 'in_progress', label: 'In progress' }, { value: 'closed', label: 'Closed' }]" />
     </AdminToolbar>
     <AppErrorState v-if="list.error.value" :error="list.error.value" @retry="list.refresh" />
     <template v-else>

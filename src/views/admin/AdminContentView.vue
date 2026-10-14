@@ -113,9 +113,7 @@ async function togglePublished(t: Testimonial, v: boolean) {
 
     <section v-if="tab === 'faqs'" role="tabpanel" aria-labelledby="content-faqs">
       <AdminToolbar v-model:search="faqs.search.value" placeholder="Search FAQs">
-        <label><span class="sr-only">Page</span>
-          <select v-model="faqs.filters.product"><option value="">All pages</option><option v-for="p in PRODUCTS" :key="p.value" :value="p.value">{{ p.label }}</option></select>
-        </label>
+        <AppSelect v-model="faqs.filters.product" variant="filter" label="Page" hide-label empty-label="All pages" :options="PRODUCTS" />
         <AppButton icon-left="plus" size="sm" @click="edit()">Add FAQ</AppButton>
       </AdminToolbar>
       <AppErrorState v-if="faqs.error.value" :error="faqs.error.value" @retry="faqs.refresh" />

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppSelect from '@/components/base/AppSelect.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminToolbar from '@/components/admin/AdminToolbar.vue'
@@ -63,12 +64,8 @@ async function run() {
 <template>
   <div>
     <AdminToolbar v-model:search="list.search.value" placeholder="Search name, email or phone" :selected-count="auth.can('users.manage') ? selected.length : 0">
-      <label><span class="sr-only">Status</span>
-        <select v-model="list.filters.status"><option value="">All statuses</option><option value="active">Active</option><option value="suspended">Suspended</option></select>
-      </label>
-      <label><span class="sr-only">KYC</span>
-        <select v-model="list.filters.kyc_status"><option value="">All KYC</option><option value="verified">Verified</option><option value="pending">Pending</option><option value="unverified">Unverified</option></select>
-      </label>
+      <AppSelect v-model="list.filters.status" variant="filter" label="Status" hide-label empty-label="All statuses" :options="[{ value: 'active', label: 'Active' }, { value: 'suspended', label: 'Suspended' }]" />
+      <AppSelect v-model="list.filters.kyc_status" variant="filter" label="KYC status" hide-label empty-label="All KYC" :options="[{ value: 'verified', label: 'Verified' }, { value: 'pending', label: 'Pending' }, { value: 'unverified', label: 'Unverified' }]" />
       <template #bulk>
         <AppButton size="sm" variant="secondary" @click="ask('activate', selected)">Activate</AppButton>
         <AppButton size="sm" variant="danger-soft" @click="ask('suspend', selected)">Suspend</AppButton>

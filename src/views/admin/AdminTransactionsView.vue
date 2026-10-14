@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppSelect from '@/components/base/AppSelect.vue'
 import { ref } from 'vue'
 import AdminToolbar from '@/components/admin/AdminToolbar.vue'
 import AppButton from '@/components/base/AppButton.vue'
@@ -49,18 +50,8 @@ async function requery(t: Transaction) {
 <template>
   <div>
     <AdminToolbar v-model:search="list.search.value" placeholder="Search reference, customer">
-      <label><span class="sr-only">Status</span>
-        <select v-model="list.filters.status">
-          <option value="">All statuses</option>
-          <option v-for="s in ['success', 'pending', 'failed', 'abandoned', 'reversed']" :key="s" :value="s">{{ humanize(s) }}</option>
-        </select>
-      </label>
-      <label><span class="sr-only">Type</span>
-        <select v-model="list.filters.payable_type">
-          <option value="">All types</option>
-          <option v-for="s in ['buyback_order', 'capital_investment', 'listing_fee', 'holding_payment']" :key="s" :value="s">{{ humanize(s) }}</option>
-        </select>
-      </label>
+      <AppSelect v-model="list.filters.status" variant="filter" label="Status" hide-label empty-label="All statuses" :options="['success', 'pending', 'failed', 'abandoned', 'reversed'].map((v) => ({ value: v, label: humanize(v) }))" />
+      <AppSelect v-model="list.filters.payable_type" variant="filter" label="Type" hide-label empty-label="All types" :options="['buyback_order', 'capital_investment', 'listing_fee', 'holding_payment'].map((v) => ({ value: v, label: humanize(v) }))" />
       <label><span class="sr-only">From</span><input v-model="list.filters.from" type="date" class="date" /></label>
       <label><span class="sr-only">To</span><input v-model="list.filters.to" type="date" class="date" /></label>
     </AdminToolbar>

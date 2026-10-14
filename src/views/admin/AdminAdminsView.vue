@@ -97,12 +97,7 @@ async function revoke() {
       <AppDataTable :columns="columns" :rows="list.items.value" :loading="list.loading.value" caption="Administrators">
         <template #cell-name="{ row }"><span class="cell"><strong>{{ row.name }}<template v-if="row.id === auth.user?.id"> (you)</template></strong><small>{{ row.email }}</small></span></template>
         <template #cell-role="{ row }">
-          <label v-if="row.id !== auth.user?.id" class="role">
-            <span class="sr-only">Role for {{ row.name }}</span>
-            <select :value="row.role" @change="changeRole(row, ($event.target as HTMLSelectElement).value)">
-              <option v-for="o in ROLE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
-            </select>
-          </label>
+          <AppSelect v-if="row.id !== auth.user?.id" :model-value="row.role" variant="filter" size="sm" :label="`Role for ${row.name}`" hide-label :options="ROLE_OPTIONS" @change="(v) => changeRole(row, String(v))" />
           <span v-else>{{ ROLE_LABELS[row.role] }}</span>
         </template>
         <template #cell-status="{ row }"><StatusBadge :status="row.status" size="sm" /></template>
@@ -148,14 +143,6 @@ async function revoke() {
   color: var(--color-muted);
 }
 
-.role select {
-  height: 32px;
-  padding: 0 8px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg);
-  font-size: var(--text-sm);
-}
 
 .stack {
   display: grid;

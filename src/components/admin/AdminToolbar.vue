@@ -64,14 +64,6 @@ const search = defineModel<string>('search', { default: '' })
   gap: 8px;
 }
 
-.toolbar__filters :deep(select) {
-  height: 40px;
-  padding: 0 12px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-bg);
-  font-size: var(--text-sm);
-}
 
 .toolbar__bulk {
   display: flex;
@@ -92,8 +84,7 @@ const search = defineModel<string>('search', { default: '' })
   .toolbar__filters {
     width: 100%;
   }
-  .toolbar__filters :deep(select),
-  .toolbar__filters :deep(label) {
+  .toolbar__filters > * {
     flex: 1;
   }
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppSelect from '@/components/base/AppSelect.vue'
 import AppBackLink from '@/components/base/AppBackLink.vue'
 import AppDataTable, { type Column } from '@/components/base/AppDataTable.vue'
 import AppEmptyState from '@/components/base/AppEmptyState.vue'
@@ -34,16 +35,7 @@ const columns: Column[] = [
         <h1 class="tx__title">Payment history</h1>
         <p class="tx__lead">Every Paystack payment on your account, as verified by Amcom.</p>
       </div>
-      <label class="tx__filter">
-        <span class="sr-only">Filter by status</span>
-        <select v-model="list.filters.status">
-          <option value="">All statuses</option>
-          <option value="success">Successful</option>
-          <option value="pending">Pending</option>
-          <option value="failed">Failed</option>
-          <option value="abandoned">Abandoned</option>
-        </select>
-      </label>
+      <AppSelect v-model="list.filters.status" variant="filter" label="Filter by status" hide-label empty-label="All statuses" class="tx__filter" :options="[{ value: 'success', label: 'Successful' }, { value: 'pending', label: 'Pending' }, { value: 'failed', label: 'Failed' }, { value: 'abandoned', label: 'Abandoned' }]" />
     </header>
 
     <AppErrorState v-if="list.error.value" :error="list.error.value" @retry="list.refresh" />
@@ -92,14 +84,6 @@ const columns: Column[] = [
   color: var(--color-muted);
 }
 
-.tx__filter select {
-  height: 40px;
-  padding: 0 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background: var(--color-bg);
-  font-size: var(--text-sm);
-}
 
 .tx__ref {
   font-family: var(--font-mono);
@@ -114,9 +98,6 @@ const columns: Column[] = [
   .tx__head {
     flex-direction: column;
     align-items: stretch;
-  }
-  .tx__filter select {
-    width: 100%;
   }
 }
 </style>

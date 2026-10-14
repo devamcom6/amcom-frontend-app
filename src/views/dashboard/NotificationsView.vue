@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppSelect from '@/components/base/AppSelect.vue'
 import { useRouter } from 'vue-router'
 import AppBackLink from '@/components/base/AppBackLink.vue'
 import AppButton from '@/components/base/AppButton.vue'
@@ -37,13 +38,7 @@ async function markAll() {
     <header class="notes__head">
       <h1 class="notes__title">Notifications</h1>
       <div class="notes__actions">
-        <label class="notes__filter">
-          <span class="sr-only">Show</span>
-          <select v-model="list.filters.unread">
-            <option value="">All</option>
-            <option value="true">Unread</option>
-          </select>
-        </label>
+        <AppSelect v-model="list.filters.unread" variant="filter" label="Show" hide-label empty-label="All" class="notes__filter" :options="[{ value: 'true', label: 'Unread' }]" />
         <AppButton variant="outline" size="sm" :disabled="!store.unread" @click="markAll">Mark all as read</AppButton>
       </div>
     </header>
@@ -93,13 +88,6 @@ async function markAll() {
   gap: 12px;
 }
 
-.notes__filter select {
-  height: 36px;
-  padding: 0 12px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg);
-}
 
 .notes__list {
   display: grid;

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppSelect from '@/components/base/AppSelect.vue'
 import { ref } from 'vue'
 import AdminToolbar from '@/components/admin/AdminToolbar.vue'
 import AppButton from '@/components/base/AppButton.vue'
@@ -72,19 +73,8 @@ async function submit() {
 <template>
   <div>
     <AdminToolbar v-model:search="list.search.value" placeholder="Search title, reference, owner">
-      <label><span class="sr-only">Status</span>
-        <select v-model="list.filters.status">
-          <option value="">All statuses</option>
-          <option value="pending_verification">Pending verification</option>
-          <option value="published">Published</option>
-          <option value="awaiting_payment">Awaiting payment</option>
-          <option value="rejected">Rejected</option>
-          <option value="sold">Sold</option>
-        </select>
-      </label>
-      <label><span class="sr-only">Listing type</span>
-        <select v-model="list.filters.listing_type"><option value="">All types</option><option v-for="o in LISTING_TYPE_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option></select>
-      </label>
+      <AppSelect v-model="list.filters.status" variant="filter" label="Status" hide-label empty-label="All statuses" :options="[{ value: 'pending_verification', label: 'Pending verification' }, { value: 'published', label: 'Published' }, { value: 'awaiting_payment', label: 'Awaiting payment' }, { value: 'rejected', label: 'Rejected' }, { value: 'sold', label: 'Sold' }]" />
+      <AppSelect v-model="list.filters.listing_type" variant="filter" label="Listing type" hide-label empty-label="All types" :options="LISTING_TYPE_OPTIONS" />
     </AdminToolbar>
 
     <AppErrorState v-if="list.error.value" :error="list.error.value" @retry="list.refresh" />

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppSelect from '@/components/base/AppSelect.vue'
 import { ref } from 'vue'
 import AdminToolbar from '@/components/admin/AdminToolbar.vue'
 import AppButton from '@/components/base/AppButton.vue'
@@ -59,12 +60,7 @@ async function copy(url: string) {
 <template>
   <div>
     <AdminToolbar v-model:search="list.search.value" placeholder="Search media">
-      <label><span class="sr-only">Collection</span>
-        <select v-model="list.filters.collection">
-          <option value="">All collections</option>
-          <option v-for="c in ['estate_gallery', 'property_gallery', 'listing_photo', 'content', 'avatar']" :key="c" :value="c">{{ humanize(c) }}</option>
-        </select>
-      </label>
+      <AppSelect v-model="list.filters.collection" variant="filter" label="Collection" hide-label empty-label="All collections" :options="['estate_gallery', 'property_gallery', 'listing_photo', 'content', 'avatar'].map((v) => ({ value: v, label: humanize(v) }))" />
       <AppButton size="sm" icon-left="upload" :loading="uploading > 0" @click="input?.click()">Upload</AppButton>
       <input ref="input" type="file" multiple accept="image/jpeg,image/png,image/webp" class="sr-only" tabindex="-1" @change="onFiles" />
     </AdminToolbar>
