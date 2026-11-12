@@ -37,4 +37,8 @@ export interface Lookups {
   relationships: string[]
   banks: Bank[]
   property_locations: string[]
+  /** Versioned legal documents. Read the URL from here; never hardcode it (a new version is a backend setting). */
+  legal?: {
+    buyer_terms_url: string | null
+  }
 }

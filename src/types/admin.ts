@@ -1,7 +1,7 @@
 import type { ISODate, ISODateTime, Naira } from './api'
 import type { AccountStatus, KycStatus, Permission, Role } from './auth'
 import type { ListingStatus, ListingType, PropertyType } from './property'
-import type { OrderStatus } from './investment'
+import type { OrderStatus, ReferrerUser } from './investment'
 import type { Media } from './media'
 
 export interface DateRange {
@@ -108,6 +108,10 @@ export interface AdminInvestment {
   tenure_months: number
   status: OrderStatus
   maturity_date: ISODate | null
+  /** Referral captured at checkout (direct purchase) or on the interest form. */
+  referrer_name?: string | null
+  referrer_phone?: string | null
+  referrer_user?: ReferrerUser | null
   created_at: ISODateTime
 }
 
@@ -120,6 +124,10 @@ export interface AdminRequest {
   name: string
   email: string
   phone: string | null
+  /** Set on interest / application requests when the customer named a referrer. */
+  referrer_name?: string | null
+  referrer_phone?: string | null
+  referrer_user?: ReferrerUser | null
   subject: string
   status: 'new' | 'in_progress' | 'closed'
   assigned_to: string | null
@@ -174,7 +182,7 @@ export interface PermissionDefinition {
   description: string
 }
 
-export type ReportType = 'revenue' | 'investments' | 'users' | 'listings'
+export type ReportType = 'revenue' | 'investments' | 'users' | 'listings' | 'referrals'
 
 export interface ReportQuery extends DateRange {
   type: ReportType
@@ -186,8 +194,9 @@ export interface Report {
   range: DateRange
   group_by: 'day' | 'week' | 'month'
   totals: { label: string; value: number; format: 'currency' | 'number' | 'percent' }[]
+  /** Empty for `referrals` (one row per referrer, no time series). */
   series: { label: string; value: number }[]
-  rows: Record<string, string | number>[]
+  rows: Record<string, string | number | null>[]
   columns: { key: string; label: string; format?: 'currency' | 'number' | 'date' }[]
 }
 

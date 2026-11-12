@@ -110,6 +110,19 @@ export function seedAdminListings(users: AdminUser[]): AdminListing[] {
   })
 }
 
+/**
+ * A few repeat referrers: two match a seeded account by phone (so the API would link them),
+ * one is free text. Deterministic — adds no rng() calls, so other seeds stay stable.
+ */
+function referrerFor(i: number, users: AdminUser[]) {
+  const linked = [users[5], users[17]].filter((u): u is AdminUser => !!u)
+  const pool = [
+    ...linked.map((u) => ({ referrer_name: u.name, referrer_phone: u.phone, referrer_user: { id: u.id, name: u.name } })),
+    { referrer_name: 'Chidi Okafor', referrer_phone: '+234 802 111 2233', referrer_user: null },
+  ]
+  return pool[i % pool.length]!
+}
+
 export function seedAdminInvestments(users: AdminUser[]): AdminInvestment[] {
   const r = rng(1234)
   const statuses = ['interest_submitted', 'pending_signature', 'pending_payment', 'active', 'active', 'active', 'matured', 'paid_out'] as const
@@ -130,12 +143,13 @@ export function seedAdminInvestments(users: AdminUser[]): AdminInvestment[] {
       tenure_months: tenure,
       status: pick(r, statuses),
       maturity_date: new Date(Date.now() + (tenure * 30 - created) * 86_400_000).toISOString().slice(0, 10),
+      ...(i % 4 === 0 ? referrerFor(i / 4, users) : {}),
       created_at: daysAgo(created),
     }
   })
 }
 
-export function seedRequests(): AdminRequest[] {
+export function seedRequests(users: AdminUser[]): AdminRequest[] {
   const r = rng(555)
   const kinds = ['interest', 'application', 'inspection', 'contact', 'support'] as const
   const subjects: Record<(typeof kinds)[number], string[]> = {
@@ -156,6 +170,8 @@ export function seedRequests(): AdminRequest[] {
       name: `${first} ${last}`,
       email: `${first}.${last}@example.com`.toLowerCase(),
       phone: '+234 803 555 0101',
+      // Deterministic (no extra r() calls) so the rest of the seed stays stable.
+      ...((kind === 'interest' || kind === 'application') && i % 3 === 0 ? referrerFor(i, users) : {}),
       subject: pick(r, subjects[kind]),
       status: pick(r, ['new', 'new', 'in_progress', 'closed'] as const),
       assigned_to: r() > 0.6 ? 'Tunde Bakare' : null,

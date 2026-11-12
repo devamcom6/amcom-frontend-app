@@ -1,0 +1,94 @@
+# Example nginx config for the Amcom SPA. Pick ONE option and merge it into your
+# existing nginx site. Do not install this file unchanged.
+#
+# The frontend is served from the `current` symlink that scripts/deploy.sh switches:
+#   /var/www/apps/amcom/frontend/current
+#
+# After editing:  sudo nginx -t && sudo systemctl reload nginx
+
+# -----------------------------------------------------------------------------
+# OPTION A (production setup): frontend on its own domain, API on its own.
+#   app: https://amcomglobal.com   API: https://amcom.iterationplus.com/api/v1
+# Save as /etc/nginx/sites-available/amcomglobal, then:
+#   sudo ln -s /etc/nginx/sites-available/amcomglobal /etc/nginx/sites-enabled/
+#   sudo nginx -t && sudo systemctl reload nginx
+#   sudo certbot --nginx -d amcomglobal.com -d www.amcomglobal.com   # adds 443 + redirects
+# -----------------------------------------------------------------------------
+
+# www -> apex, so there is one canonical origin (matches VITE_APP_URL / FRONTEND_URL).
+server {
+    listen 80;
+    server_name www.amcomglobal.com;
+    return 301 https://amcomglobal.com$request_uri;
+}
+
+server {
+    listen 80;
+    server_name amcomglobal.com;
+
+    root /var/www/apps/amcom/frontend/current;
+    index index.html;
+
+    # Security headers (docs/FRONTEND_ARCHITECTURE.md §14). Set connect-src to your real API origin.
+    add_header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob: https://res.cloudinary.com; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://amcom.iterationplus.com; frame-src https://www.google.com https://maps.google.com; form-action 'self' https://checkout.paystack.com" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    # Hashed build assets never change: cache for a year.
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        try_files $uri =404;
+    }
+
+    # index.html must always be fresh so a new deploy is picked up immediately.
+    location = /index.html {
+        add_header Cache-Control "no-cache" always;
+        add_header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob: https://res.cloudinary.com; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://amcom.iterationplus.com; frame-src https://www.google.com https://maps.google.com; form-action 'self' https://checkout.paystack.com" always;
+        add_header X-Frame-Options "DENY" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    }
+
+    # SPA fallback: every client-side route (/properties/x, /dashboard, ...) returns index.html.
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    gzip on;
+    gzip_types text/css application/javascript application/json image/svg+xml;
+}
+
+# -----------------------------------------------------------------------------
+# OPTION B: same domain as the backend (amcom.iterationplus.com).
+# The SPA owns `/`; Laravel keeps `/api`, `/up` (the backend deploy's health check, keep it!)
+# and anything else it serves (/storage, /sanctum, ...). Add these blocks INSIDE the existing
+# Laravel server { } and remove its old `location /` block. Keep your existing PHP block.
+# Laravel's public folder is the backend deploy's `current` release: /var/www/apps/amcom/current/public
+# -----------------------------------------------------------------------------
+# root /var/www/apps/amcom/frontend/current;
+#
+# location ~ ^/(api|up|sanctum|storage|broadcasting)(/|$) {
+#     root /var/www/apps/amcom/current/public;      # <- Laravel public/ (backend `current` release)
+#     try_files $uri /index.php?$query_string;
+# }
+#
+# location ~ \.php$ {
+#     root /var/www/apps/amcom/current/public;      # <- same Laravel public/ folder
+#     include snippets/fastcgi-php.conf;
+#     fastcgi_pass unix:/run/php/php8.3-fpm.sock;   # <- your PHP-FPM socket
+#     fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+# }
+#
+# location /assets/ {
+#     expires 1y;
+#     add_header Cache-Control "public, max-age=31536000, immutable" always;
+#     try_files $uri =404;
+# }
+#
+# location / {
+#     try_files $uri $uri/ /index.html;
+# }

@@ -65,6 +65,7 @@ mock.get('/properties/:slug/similar', ({ params }) => {
 mock.post('/properties/:slug/applications', ({ params, body }) => {
   const p = findProperty(params.slug ?? '')
   validate(body, { full_name: ['required'], email: ['required', 'email'], phone: ['required'], message: ['required'] })
+  if (body.accept_terms !== true) validationFail({ accept_terms: ['Please confirm you have read and understood the Terms and Conditions.'] })
   return created(
     { id: db.nextId(), reference: `APP-${db.state.seq}`, property_title: p.title, status: 'received', created_at: new Date().toISOString() },
     'Application submitted. A confirmation email has been sent to your inbox.',

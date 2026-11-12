@@ -68,7 +68,19 @@ export interface BuybackQuote {
   maturity_date: ISODate
 }
 
-export interface ContactDetails {
+/** Optional referral captured on interest, application and direct-purchase forms. */
+export interface ReferrerInput {
+  referrer_name?: string | null
+  referrer_phone?: string | null
+}
+
+/** Account the API linked from `referrer_phone` (null when none, or several, match). */
+export interface ReferrerUser {
+  id: number
+  name: string
+}
+
+export interface ContactDetails extends ReferrerInput {
   full_name: string
   email: string
   phone: string
@@ -82,7 +94,7 @@ export interface BuybackInterestPayload extends ContactDetails {
   tenure_months: number
 }
 
-export interface CreateBuybackOrderPayload {
+export interface CreateBuybackOrderPayload extends ReferrerInput {
   estate_id: number
   plot_ids: number[]
   tenure_months: number
@@ -144,7 +156,7 @@ export interface CapitalInterestPayload extends ContactDetails {
   tenure_months: number
 }
 
-export interface CreateCapitalInvestmentPayload {
+export interface CreateCapitalInvestmentPayload extends ReferrerInput {
   amount: Naira
   tenure_months: number
 }

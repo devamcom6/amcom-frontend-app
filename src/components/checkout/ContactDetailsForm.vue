@@ -3,16 +3,19 @@ import AppAlert from '@/components/base/AppAlert.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppTextarea from '@/components/base/AppTextarea.vue'
 import type { FormApi } from '@/composables/useForm'
+import ReferrerFields from './ReferrerFields.vue'
 
 export interface ContactFormValues extends Record<string, unknown> {
   full_name: string
   email: string
   phone: string
   alt_phone: string
+  referrer_name: string
+  referrer_phone: string
   note: string
 }
 
-/** "Personal Information" step for interest submissions. */
+/** "Personal Information" step for interest submissions (buyback + capital investment). */
 defineProps<{ form: FormApi<ContactFormValues> }>()
 </script>
 
@@ -62,6 +65,13 @@ defineProps<{ form: FormApi<ContactFormValues> }>()
         @blur="form.touch('alt_phone')"
       />
     </div>
+    <ReferrerFields
+      v-model:name="form.values.referrer_name"
+      v-model:phone="form.values.referrer_phone"
+      :name-error="form.errors.referrer_name"
+      :phone-error="form.errors.referrer_phone"
+      @blur="form.touch"
+    />
     <AppTextarea v-model="form.values.note" label="Note" optional placeholder="Enter note" :maxlength="1000" :error="form.errors.note" />
   </div>
 </template>
@@ -76,5 +86,12 @@ defineProps<{ form: FormApi<ContactFormValues> }>()
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+@media (max-width: 767px) {
+  .contact-form__row {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
 }
 </style>

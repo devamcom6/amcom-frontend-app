@@ -310,9 +310,10 @@ mock.get('/admin/media', (ctx) => {
 mock.get('/admin/reports/:type', (ctx) => {
   requirePermission(ctx, 'reports.view')
   const type = ctx.params.type as ReportType
+  if (type === 'referrals') return ok(referralsReport(ctx.query))
   const groupBy = (ctx.query.group_by as Report['group_by']) ?? 'month'
   const labels = groupBy === 'month' ? ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'] : groupBy === 'week' ? ['W36', 'W37', 'W38', 'W39', 'W40', 'W41'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-  const base: Record<ReportType, number> = { revenue: 48_000_000, investments: 34, users: 120, listings: 18 }
+  const base: Record<Exclude<ReportType, 'referrals'>, number> = { revenue: 48_000_000, investments: 34, users: 120, listings: 18 }
   const series = labels.map((label, i) => ({ label, value: Math.round(base[type] * (0.7 + ((i * 37) % 10) / 15)) }))
   const total = series.reduce((s, x) => s + x.value, 0)
   const isMoney = type === 'revenue'
@@ -336,9 +337,51 @@ mock.get('/admin/reports/:type', (ctx) => {
   return ok(report)
 })
 
+/** One row per referrer, built from the seeded requests + investments (mirrors GET /admin/reports/referrals). */
+function referralsReport(query: Record<string, unknown>): Report {
+  type Row = { referrer_name: string | null; referrer_phone: string | null; referrer_user: string | null; referrer_user_id: number | null; requests_count: number; investments_count: number; amount_invested: number }
+  const rows = new Map<string, Row>()
+  const rowFor = (name?: string | null, phone?: string | null, user?: { id: number; name: string } | null) => {
+    const key = phone || name || ''
+    let r = rows.get(key)
+    if (!r) rows.set(key, (r = { referrer_name: name ?? null, referrer_phone: phone ?? null, referrer_user: user?.name ?? null, referrer_user_id: user?.id ?? null, requests_count: 0, investments_count: 0, amount_invested: 0 }))
+    return r
+  }
+  for (const q of db.requests) if (q.referrer_name || q.referrer_phone) rowFor(q.referrer_name, q.referrer_phone, q.referrer_user).requests_count++
+  for (const inv of db.adminInvestments) {
+    if (!inv.referrer_name && !inv.referrer_phone) continue
+    const r = rowFor(inv.referrer_name, inv.referrer_phone, inv.referrer_user)
+    r.investments_count++
+    if (!['interest_submitted', 'pending_signature', 'pending_payment', 'cancelled'].includes(inv.status)) r.amount_invested += inv.principal
+  }
+  const list = [...rows.values()].sort((a, b) => b.amount_invested - a.amount_invested)
+  return {
+    type: 'referrals',
+    range: { from: String(query.from ?? ''), to: String(query.to ?? '') },
+    group_by: (query.group_by as Report['group_by']) ?? 'month',
+    totals: [
+      { label: 'Referrers', value: list.length, format: 'number' },
+      { label: 'Referred investments', value: list.reduce((s, r) => s + r.investments_count, 0), format: 'number' },
+      { label: 'Amount invested via referrals', value: list.reduce((s, r) => s + r.amount_invested, 0), format: 'currency' },
+    ],
+    series: [],
+    columns: [
+      { key: 'referrer_name', label: 'Referrer' },
+      { key: 'referrer_phone', label: 'Phone' },
+      { key: 'referrer_user', label: 'Linked account' },
+      { key: 'requests_count', label: 'Interests & applications', format: 'number' },
+      { key: 'investments_count', label: 'Investments', format: 'number' },
+      { key: 'amount_invested', label: 'Amount invested', format: 'currency' },
+    ],
+    rows: list,
+  }
+}
+
+const REFERRALS_CSV = 'referrer,phone,linked_account,interests_and_applications,investments,amount_invested\nChidi Okafor,+234 802 111 2233,Chidi Okafor,4,3,15000000\n'
+
 mock.get('/admin/reports/:type/export', (ctx) => {
   requirePermission(ctx, 'reports.export')
-  const csv = 'period,value\nMay,100\nJun,120\n'
+  const csv = ctx.params.type === 'referrals' ? REFERRALS_CSV : 'period,value\nMay,100\nJun,120\n'
   return { status: 200, data: new Blob([csv], { type: 'text/csv' }), headers: { 'content-type': 'text/csv' } }
 })
 

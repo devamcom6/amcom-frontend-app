@@ -43,3 +43,5 @@ No secrets belong in `VITE_*` variables — Paystack, Cloudinary, ZeptoMail and 
 ## Deployment
 
 Static SPA: serve `dist/` with a fallback rewrite of all routes to `index.html`, and the security headers listed in the architecture doc (§14).
+
+Pushes to `main` deploy automatically to the VPS (`/var/www/apps/amcom/frontend`, next to the backend) via GitHub Actions. Setup, manual deploys and rollback: [deploy/README.md](deploy/README.md).

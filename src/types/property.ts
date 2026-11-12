@@ -71,7 +71,12 @@ export interface PropertyApplicationPayload {
   full_name: string
   email: string
   phone: string
+  /** Optional — the person who referred this applicant. */
+  referrer_name?: string | null
+  referrer_phone?: string | null
   message: string
+  /** Buyer confirms they read the Terms and Conditions (`legal.buyer_terms_url`). Must be true. */
+  accept_terms: boolean
 }
 
 export interface PropertyApplication {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppSelect from '@/components/base/AppSelect.vue'
 import AdminToolbar from '@/components/admin/AdminToolbar.vue'
+import ReferrerCell from '@/components/admin/ReferrerCell.vue'
 import AppDataTable, { type Column } from '@/components/base/AppDataTable.vue'
 import AppErrorState from '@/components/base/AppErrorState.vue'
 import AppPagination from '@/components/base/AppPagination.vue'
@@ -33,6 +34,7 @@ const columns: Column[] = [
   { key: 'reference', label: 'Reference', primary: true },
   { key: 'customer', label: 'Customer' },
   { key: 'description', label: 'Product', hideOnMobile: true },
+  { key: 'referrer', label: 'Referrer', hideOnMobile: true },
   { key: 'principal', label: 'Principal', align: 'right', sortable: true },
   { key: 'roi_percent', label: 'ROI', align: 'right' },
   { key: 'maturity_date', label: 'Maturity', sortable: true },
@@ -62,6 +64,7 @@ async function update(row: AdminInvestment, status: string) {
       <AppDataTable :columns="columns" :rows="list.items.value" :loading="list.loading.value" :sort="list.sort.value" caption="Investments" @sort="list.toggleSort">
         <template #cell-reference="{ row }"><span class="cell"><strong>{{ row.reference }}</strong><small>{{ humanize(row.product) }} · {{ formatDate(row.created_at) }}</small></span></template>
         <template #cell-customer="{ row }"><span class="cell"><span>{{ row.customer.name }}</span><small>{{ row.customer.email }}</small></span></template>
+        <template #cell-referrer="{ row }"><ReferrerCell :name="row.referrer_name" :phone="row.referrer_phone" :user="row.referrer_user" /></template>
         <template #cell-principal="{ row }">{{ formatNaira(row.principal) }}</template>
         <template #cell-roi_percent="{ row }">{{ row.roi_percent }}% / {{ row.tenure_months }}m</template>
         <template #cell-maturity_date="{ row }">{{ formatDate(row.maturity_date) }}</template>

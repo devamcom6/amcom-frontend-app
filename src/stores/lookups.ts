@@ -37,11 +37,12 @@ export const useLookupStore = defineStore('lookups', () => {
   const relationships = computed<Option[]>(() => (data.value ? toOptions(data.value.relationships) : RELATIONSHIP_OPTIONS))
   const banks = computed<Option[]>(() => data.value?.banks.map((b) => ({ value: b.code, label: b.name })) ?? [])
   const propertyLocations = computed(() => data.value?.property_locations ?? [])
+  const buyerTermsUrl = computed(() => data.value?.legal?.buyer_terms_url || null)
 
   function lgasFor(state: string | null | undefined): Option[] {
     if (!state) return []
     return toOptions(data.value?.states.find((s) => s.name === state)?.lgas ?? [])
   }
 
-  return { data, loading, ensure, countries, states, idTypes, relationships, banks, propertyLocations, lgasFor }
+  return { data, loading, ensure, countries, states, idTypes, relationships, banks, propertyLocations, buyerTermsUrl, lgasFor }
 })

@@ -15,6 +15,7 @@ defineProps<{
   fallback: RouteLocationRaw
   /** Narrow left column like the payment screen. */
   wideAside?: boolean
+  stepperTone?: 'primary' | 'lime'
 }>()
 const emit = defineEmits<{ back: [MouseEvent] }>()
 </script>
@@ -23,7 +24,7 @@ const emit = defineEmits<{ back: [MouseEvent] }>()
   <div class="checkout">
     <div class="container container--form checkout__inner">
       <AppBackLink :fallback="fallback" @click="emit('back', $event)" />
-      <AppStepper :steps="steps" :current="current" class="checkout__stepper" />
+      <AppStepper :steps="steps" :current="current" :tone="stepperTone" class="checkout__stepper" />
       <div class="checkout__grid" :class="{ 'checkout__grid--wide-aside': wideAside }">
         <div class="checkout__main">
           <header class="checkout__head">

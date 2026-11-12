@@ -1,0 +1,93 @@
+# Builds the SPA and deploys it to the VPS on every push to main.
+# Can also be run by hand from the Actions tab ("Run workflow"), optionally as a rollback.
+#
+# Uses the same `production` environment secrets as the backend repo (amcom-backend-api),
+# so they can be copied over unchanged (Settings → Environments → production):
+#   VPS_HOST, VPS_USER, VPS_PORT, VPS_SSH_KEY, VPS_KNOWN_HOSTS
+#   DEPLOY_PATH      the BACKEND root (e.g. /var/www/apps/amcom). The frontend deploys into
+#                    $DEPLOY_PATH/frontend, beside the backend's releases/, shared/ and current/.
+#
+# Environment variables (same page), all optional:
+#   APP_URL               the frontend's public URL; health-checked after each deploy
+#                         (a failed check rolls back). NOT the backend's API URL.
+#   FRONTEND_DEPLOY_PATH  override the target folder (must stay inside DEPLOY_PATH)
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: What to run
+        type: choice
+        options: [deploy, rollback]
+        default: deploy
+
+# Never run two deploys at once; a newer push waits for the running one.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.APP_URL }}
+    timeout-minutes: 20
+    env:
+      DEPLOY_HOST: ${{ secrets.VPS_HOST }}
+      DEPLOY_USER: ${{ secrets.VPS_USER }}
+      DEPLOY_PORT: ${{ secrets.VPS_PORT || '22' }}
+      # Backend root from the shared secret; scripts/deploy.sh targets $APP_ROOT/frontend.
+      APP_ROOT: ${{ secrets.DEPLOY_PATH || '/var/www/apps/amcom' }}
+      DEPLOY_PATH: ${{ vars.FRONTEND_DEPLOY_PATH }}
+      HEALTHCHECK_URL: ${{ vars.APP_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          test -n "$DEPLOY_HOST" || { echo "::error::VPS_HOST secret is not set"; exit 1; }
+          test -n "$DEPLOY_USER" || { echo "::error::VPS_USER secret is not set"; exit 1; }
+          test -n "$SSH_KEY" || { echo "::error::VPS_SSH_KEY secret is not set"; exit 1; }
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/amcom_deploy
+          chmod 600 ~/.ssh/amcom_deploy
+          if [ -n "$KNOWN_HOSTS" ]; then
+            printf '%s\n' "$KNOWN_HOSTS" >> ~/.ssh/known_hosts
+          else
+            echo "::warning::VPS_KNOWN_HOSTS is not set; trusting the host key seen now (set it to pin the server)."
+            ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          fi
+          ssh -i ~/.ssh/amcom_deploy -p "$DEPLOY_PORT" -o BatchMode=yes "$DEPLOY_USER@$DEPLOY_HOST" true
+
+      - name: Deploy
+        if: github.event_name == 'push' || inputs.action == 'deploy'
+        run: bash scripts/deploy.sh deploy
+        env:
+          SSH_KEY_FILE: /home/runner/.ssh/amcom_deploy
+
+      - name: Roll back to the previous release
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'rollback'
+        run: bash scripts/deploy.sh rollback
+        env:
+          SSH_KEY_FILE: /home/runner/.ssh/amcom_deploy
+
+      - name: Show releases
+        if: always()
+        run: bash scripts/deploy.sh releases || true
+        env:
+          SSH_KEY_FILE: /home/runner/.ssh/amcom_deploy

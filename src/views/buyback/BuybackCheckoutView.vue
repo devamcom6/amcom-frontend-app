@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppAlert from '@/components/base/AppAlert.vue'
 import AppButton from '@/components/base/AppButton.vue'
@@ -12,6 +12,7 @@ import ContactDetailsForm, { type ContactFormValues } from '@/components/checkou
 import PaymentMethodStep from '@/components/checkout/PaymentMethodStep.vue'
 import PlotGrid from '@/components/checkout/PlotGrid.vue'
 import QuoteBreakdown from '@/components/checkout/QuoteBreakdown.vue'
+import ReferrerFields from '@/components/checkout/ReferrerFields.vue'
 import SummaryCard from '@/components/checkout/SummaryCard.vue'
 import TenureSelector from '@/components/checkout/TenureSelector.vue'
 import { useAsync } from '@/composables/useAsync'
@@ -49,7 +50,7 @@ const step = computed<Step>(() => {
 const orderId = computed(() => Number(route.query.order) || null)
 const isInterest = computed(() => estate.value?.checkout_mode === 'interest')
 
-const steps = computed(() => (isInterest.value ? ['Select Plot & Plan', 'Personal Information'] : ['Select plot', 'Review and sign', 'Payment']))
+const steps = computed(() => (isInterest.value ? ['Select plot', 'Personal Information'] : ['Select plot', 'Review and sign', 'Payment']))
 const stepIndex = computed(() => ({ plot: 0, details: 1, agreement: 1, payment: 2 })[step.value])
 
 function goStep(next: Step, extra: Record<string, string | number> = {}) {
@@ -97,9 +98,21 @@ function validatePlotStep(): boolean {
 
 const creatingOrder = ref(false)
 
+/* Optional referral on the direct flow (interest mode collects it on the details step). Kept out of the draft: it's PII. */
+const referrer = reactive({ referrer_name: '', referrer_phone: '' })
+const referrerErrors = reactive<{ referrer_name: string | null; referrer_phone: string | null }>({ referrer_name: null, referrer_phone: null })
+
+function validateReferrer(): boolean {
+  referrerErrors.referrer_name = null
+  const r = phone()(referrer.referrer_phone, referrer)
+  referrerErrors.referrer_phone = r === true ? null : r
+  return !referrerErrors.referrer_phone
+}
+
 async function continueFromPlot() {
   if (!validatePlotStep() || !estate.value) return
   if (isInterest.value) return goStep('details')
+  if (!validateReferrer()) return
 
   // Direct purchase requires an account so the agreement and documents can be issued to the investor.
   if (!auth.isAuthenticated) {
@@ -108,12 +121,21 @@ async function continueFromPlot() {
   }
   creatingOrder.value = true
   try {
-    const order = await buybackService.createOrder({ estate_id: estate.value.id, plot_ids: draft.plotIds, tenure_months: draft.tenure! })
+    const order = await buybackService.createOrder({
+      estate_id: estate.value.id,
+      plot_ids: draft.plotIds,
+      tenure_months: draft.tenure!,
+      referrer_name: referrer.referrer_name.trim() || null,
+      referrer_phone: referrer.referrer_phone || null,
+    })
     goStep('agreement', { order: order.id })
   } catch (e) {
     const err = toApiError(e)
     if (err.code === 'plot_unavailable') void reloadPlots()
-    if (err.isValidation) plotError.value = err.fieldError('plot_ids') ?? err.fieldError('tenure_months') ?? err.message
+    if (err.isValidation && (err.fieldError('referrer_name') || err.fieldError('referrer_phone'))) {
+      referrerErrors.referrer_name = err.fieldError('referrer_name') ?? null
+      referrerErrors.referrer_phone = err.fieldError('referrer_phone') ?? null
+    } else if (err.isValidation) plotError.value = err.fieldError('plot_ids') ?? err.fieldError('tenure_months') ?? err.message
     else ui.apiError(err)
   } finally {
     creatingOrder.value = false
@@ -128,6 +150,8 @@ const contactForm = useForm<ContactFormValues>(
     email: auth.user?.email ?? '',
     phone: auth.user?.phone ?? '',
     alt_phone: '',
+    referrer_name: '',
+    referrer_phone: '',
     note: '',
   },
   {
@@ -136,6 +160,7 @@ const contactForm = useForm<ContactFormValues>(
       email: [required('Enter your email address.'), email()],
       phone: [required('Enter a phone number.'), phone()],
       alt_phone: [phone()],
+      referrer_phone: [phone()],
     },
   },
 )
@@ -150,6 +175,8 @@ async function submitInterest() {
         tenure_months: draft.tenure!,
         ...contactForm.values,
         alt_phone: contactForm.values.alt_phone || null,
+        referrer_name: contactForm.values.referrer_name.trim() || null,
+        referrer_phone: contactForm.values.referrer_phone || null,
         note: contactForm.values.note || null,
       }),
     )
@@ -306,6 +333,17 @@ function onBack(e: MouseEvent) {
           </template>
         </AppModal>
       </div>
+
+      <section v-if="!isInterest" class="referrer-box" aria-labelledby="referrer-label">
+        <h2 id="referrer-label" class="referrer-box__title">Referred by someone? <span>(Optional)</span></h2>
+        <ReferrerFields
+          v-model:name="referrer.referrer_name"
+          v-model:phone="referrer.referrer_phone"
+          :name-error="referrerErrors.referrer_name"
+          :phone-error="referrerErrors.referrer_phone"
+          @blur="(f) => f === 'referrer_phone' && validateReferrer()"
+        />
+      </section>
     </template>
 
     <!-- STEP 2 (interest): personal information -->
@@ -344,7 +382,6 @@ function onBack(e: MouseEvent) {
         </div>
       </div>
       <SummaryCard v-else-if="(step === 'agreement' || step === 'payment') && !isMobile" :sections="summarySections" />
-      <SummaryCard v-else-if="step === 'details' && isMobile" :sections="summarySections.slice(1)" />
     </template>
 
     <template v-if="step === 'plot' || step === 'details'" #mobile-actions>
@@ -443,5 +480,35 @@ function onBack(e: MouseEvent) {
 
 .mobile-summary {
   margin-top: 24px;
+}
+
+.referrer-box {
+  display: grid;
+  gap: 16px;
+  margin-top: 32px;
+  padding: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+}
+
+.referrer-box__title {
+  font-size: var(--text-md);
+  font-weight: 500;
+}
+
+.referrer-box__title span {
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+@media (max-width: 767px) {
+  .referrer-box {
+    margin-top: 24px;
+    padding: 16px;
+  }
+  .referrer-box__title {
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
 }
 </style>

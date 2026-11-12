@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppSelect from '@/components/base/AppSelect.vue'
 import AdminToolbar from '@/components/admin/AdminToolbar.vue'
+import ReferrerCell from '@/components/admin/ReferrerCell.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppDataTable, { type Column } from '@/components/base/AppDataTable.vue'
 import AppErrorState from '@/components/base/AppErrorState.vue'
@@ -26,6 +27,7 @@ const columns: Column[] = [
   { key: 'subject', label: 'Request', primary: true },
   { key: 'kind', label: 'Type' },
   { key: 'name', label: 'Contact' },
+  { key: 'referrer', label: 'Referrer', hideOnMobile: true },
   { key: 'assigned_to', label: 'Assignee', hideOnMobile: true },
   { key: 'status', label: 'Status' },
   { key: 'created_at', label: 'Received', sortable: true },
@@ -54,6 +56,7 @@ async function update(row: AdminRequest, payload: { status?: AdminRequest['statu
         <template #cell-subject="{ row }">
           <span class="cell"><strong>{{ row.subject }}</strong><small>{{ row.reference }}<template v-if="row.scheduled_for"> · scheduled {{ formatDateTime(row.scheduled_for) }}</template></small></span>
         </template>
+        <template #cell-referrer="{ row }"><ReferrerCell :name="row.referrer_name" :phone="row.referrer_phone" :user="row.referrer_user" /></template>
         <template #cell-kind="{ row }">{{ humanize(row.kind) }}</template>
         <template #cell-name="{ row }"><span class="cell"><span>{{ row.name }}</span><small><a :href="`mailto:${row.email}`">{{ row.email }}</a></small></span></template>
         <template #cell-assigned_to="{ row }">{{ row.assigned_to ?? 'Unassigned' }}</template>

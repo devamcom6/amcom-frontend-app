@@ -7,7 +7,7 @@ import type { IconName } from './icons'
 
 const props = withDefaults(
   defineProps<{
-    variant?: 'primary' | 'outline' | 'secondary' | 'ghost' | 'link' | 'danger' | 'danger-soft' | 'white'
+    variant?: 'primary' | 'outline' | 'secondary' | 'ghost' | 'link' | 'danger' | 'danger-soft' | 'white' | 'lime'
     size?: 'sm' | 'md' | 'lg'
     type?: 'button' | 'submit' | 'reset'
     to?: RouteLocationRaw
@@ -138,6 +138,13 @@ const iconSize = computed(() => (props.size === 'sm' ? 16 : 18))
   --btn-fg: var(--color-primary);
   --btn-border: var(--color-primary);
   --btn-bg-hover: var(--color-primary-soft);
+}
+
+.btn--lime {
+  --btn-bg: var(--color-lime);
+  --btn-fg: var(--color-inverse);
+  --btn-border: var(--color-lime);
+  --btn-bg-hover: var(--color-lime-hover);
 }
 
 .btn--secondary {

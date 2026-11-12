@@ -6,13 +6,14 @@ import AppIcon from './AppIcon.vue'
  *   (✓ Select plot) —— (2 Review and sign) —— (3 Payment)
  * On narrow screens `compact` renders numbered circles only (listing mobile design).
  */
-withDefaults(defineProps<{ steps: string[]; current: number; compact?: boolean; align?: 'start' | 'center' }>(), {
+withDefaults(defineProps<{ steps: string[]; current: number; compact?: boolean; align?: 'start' | 'center'; tone?: 'primary' | 'lime' }>(), {
   align: 'start',
+  tone: 'primary',
 })
 </script>
 
 <template>
-  <nav class="stepper" :class="[{ 'stepper--compact': compact }, `stepper--${align}`]" aria-label="Progress">
+  <nav class="stepper" :class="[{ 'stepper--compact': compact }, `stepper--${align}`, `stepper--${tone}`]" aria-label="Progress">
     <ol class="stepper__list" role="list">
       <li
         v-for="(step, i) in steps"
@@ -34,6 +35,17 @@ withDefaults(defineProps<{ steps: string[]; current: number; compact?: boolean; 
 </template>
 
 <style scoped>
+.stepper {
+  --stepper-accent: var(--color-primary);
+  --stepper-accent-soft: var(--color-primary-soft);
+}
+
+/* Capital investment interest flow uses the lime accent. */
+.stepper--lime {
+  --stepper-accent: var(--color-lime);
+  --stepper-accent-soft: #f2f9ec;
+}
+
 .stepper__list {
   display: flex;
   align-items: center;
@@ -61,7 +73,7 @@ withDefaults(defineProps<{ steps: string[]; current: number; compact?: boolean; 
 
 .stepper__item.is-done + .stepper__item .stepper__line,
 .stepper__item.is-current .stepper__line {
-  background: var(--color-primary);
+  background: var(--stepper-accent);
 }
 
 .stepper__pill {
@@ -81,14 +93,14 @@ withDefaults(defineProps<{ steps: string[]; current: number; compact?: boolean; 
 }
 
 .is-done .stepper__pill {
-  border-color: var(--color-primary);
-  background: var(--color-primary-soft);
-  color: var(--color-primary);
+  border-color: var(--stepper-accent);
+  background: var(--stepper-accent-soft);
+  color: var(--stepper-accent);
 }
 
 .is-current .stepper__pill {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
+  border-color: var(--stepper-accent);
+  background: var(--stepper-accent);
   color: var(--color-inverse);
 }
 

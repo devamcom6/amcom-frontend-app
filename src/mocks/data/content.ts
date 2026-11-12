@@ -126,5 +126,8 @@ export function seedLookups(): Lookups {
       { code: '057', name: 'Zenith Bank' },
     ],
     property_locations: ['Lagos Island', 'Lekki', 'Ikoyi', 'Victoria Island', 'Ikeja', 'Ajah', 'Port Harcourt', 'Maitama'],
+    legal: {
+      buyer_terms_url: 'https://res.cloudinary.com/prl3lpkk/raw/upload/v1794506071/TERMS_AND_CONDITIONS_FOR_BUYERS_UNDER_PROPERTY_LISITNG.docx',
+    },
   }
 }

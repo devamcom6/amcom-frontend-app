@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, useId, watch } from 'vue'
+import { computed, reactive, ref, useId, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppButton from '@/components/base/AppButton.vue'
 import AppCurrencyInput from '@/components/base/AppCurrencyInput.vue'
@@ -10,6 +10,7 @@ import AgreementStep from '@/components/checkout/AgreementStep.vue'
 import CheckoutShell from '@/components/checkout/CheckoutShell.vue'
 import ContactDetailsForm, { type ContactFormValues } from '@/components/checkout/ContactDetailsForm.vue'
 import PaymentMethodStep from '@/components/checkout/PaymentMethodStep.vue'
+import ReferrerFields from '@/components/checkout/ReferrerFields.vue'
 import SummaryCard from '@/components/checkout/SummaryCard.vue'
 import { useAsync } from '@/composables/useAsync'
 import { useCheckoutDraft } from '@/composables/useCheckoutDraft'
@@ -49,7 +50,9 @@ const step = computed<Step>(() => {
 })
 const investmentId = computed(() => Number(route.query.investment) || null)
 const isInterest = computed(() => plan.value?.checkout_mode === 'interest')
-const steps = computed(() => (isInterest.value ? ['Investment Information', 'Personal Information'] : ['Investment plan', 'Sign agreement', 'Payment']))
+const steps = computed(() =>
+  isInterest.value ? [isMobile.value ? 'Investment info' : 'Investment information', 'Personal Information'] : ['Investment plan', 'Sign agreement', 'Payment'],
+)
 const stepIndex = computed(() => ({ plan: 0, details: 1, agreement: 1, payment: 2 })[step.value])
 
 function goStep(next: Step, extra: Record<string, string | number> = {}) {
@@ -82,6 +85,17 @@ const preview = computed(() => {
 
 const order = ref<CapitalInvestmentOrder | null>(null)
 
+/* Optional referral on the direct flow (interest mode collects it on the details step). Kept out of the draft: it's PII. */
+const referrer = reactive({ referrer_name: '', referrer_phone: '' })
+const referrerErrors = reactive<{ referrer_name: string | null; referrer_phone: string | null }>({ referrer_name: null, referrer_phone: null })
+
+function validateReferrer(): boolean {
+  referrerErrors.referrer_name = null
+  const r = phone()(referrer.referrer_phone, referrer)
+  referrerErrors.referrer_phone = r === true ? null : r
+  return !referrerErrors.referrer_phone
+}
+
 const summarySections = computed<PaymentSummaryLine[][]>(() => {
   const q = order.value?.quote
   const amount = q?.amount ?? preview.value.amount
@@ -106,18 +120,27 @@ const creating = ref(false)
 async function continueFromPlan() {
   if (!validateAmount()) return
   if (isInterest.value) return goStep('details')
+  if (!validateReferrer()) return
   if (!auth.isAuthenticated) {
     ui.info('Log in to continue', 'Create an account or log in to start your investment.')
     return router.push({ name: 'login', query: { redirect: route.fullPath } })
   }
   creating.value = true
   try {
-    const created = await capitalService.createInvestment({ amount: draft.amount!, tenure_months: draft.tenure! })
+    const created = await capitalService.createInvestment({
+      amount: draft.amount!,
+      tenure_months: draft.tenure!,
+      referrer_name: referrer.referrer_name.trim() || null,
+      referrer_phone: referrer.referrer_phone || null,
+    })
     order.value = created
     goStep('agreement', { investment: created.id })
   } catch (e) {
     const err = toApiError(e)
-    if (err.isValidation) amountError.value = err.fieldError('amount') ?? err.message
+    if (err.isValidation && (err.fieldError('referrer_name') || err.fieldError('referrer_phone'))) {
+      referrerErrors.referrer_name = err.fieldError('referrer_name') ?? null
+      referrerErrors.referrer_phone = err.fieldError('referrer_phone') ?? null
+    } else if (err.isValidation) amountError.value = err.fieldError('amount') ?? err.message
     else ui.apiError(err)
   } finally {
     creating.value = false
@@ -132,6 +155,8 @@ const contactForm = useForm<ContactFormValues>(
     email: auth.user?.email ?? '',
     phone: auth.user?.phone ?? '',
     alt_phone: '',
+    referrer_name: '',
+    referrer_phone: '',
     note: '',
   },
   {
@@ -140,6 +165,7 @@ const contactForm = useForm<ContactFormValues>(
       email: [required('Enter your email address.'), email()],
       phone: [required('Enter a phone number.'), phone()],
       alt_phone: [phone()],
+      referrer_phone: [phone()],
     },
   },
 )
@@ -153,6 +179,8 @@ async function submitInterest() {
         tenure_months: draft.tenure!,
         ...contactForm.values,
         alt_phone: contactForm.values.alt_phone || null,
+        referrer_name: contactForm.values.referrer_name.trim() || null,
+        referrer_phone: contactForm.values.referrer_phone || null,
         note: contactForm.values.note || null,
       }),
     )
@@ -251,6 +279,7 @@ function onBack(e: MouseEvent) {
     :subtitle="headings.subtitle"
     fallback="/capital-investment"
     wide-aside
+    :stepper-tone="isInterest ? 'lime' : 'primary'"
     @back="onBack"
   >
     <template v-if="step === 'plan'">
@@ -282,6 +311,16 @@ function onBack(e: MouseEvent) {
           />
         </div>
       </section>
+      <section v-if="!isInterest" class="box" aria-labelledby="referrer-label">
+        <h2 id="referrer-label" class="box__title">Referred by someone? <span class="box__optional">(Optional)</span></h2>
+        <ReferrerFields
+          v-model:name="referrer.referrer_name"
+          v-model:phone="referrer.referrer_phone"
+          :name-error="referrerErrors.referrer_name"
+          :phone-error="referrerErrors.referrer_phone"
+          @blur="(f) => f === 'referrer_phone' && validateReferrer()"
+        />
+      </section>
       <SummaryCard v-if="isMobile" :sections="summarySections" />
     </template>
 
@@ -311,7 +350,7 @@ function onBack(e: MouseEvent) {
     <template v-if="!isMobile" #aside>
       <SummaryCard :sections="summarySections">
         <AppButton v-if="step === 'plan'" size="lg" block :loading="creating" @click="continueFromPlan">Continue</AppButton>
-        <AppButton v-else-if="step === 'details'" type="submit" form="ci-interest" size="lg" block :loading="contactForm.submitting">Continue</AppButton>
+        <AppButton v-else-if="step === 'details'" type="submit" form="ci-interest" variant="lime" size="lg" block :loading="contactForm.submitting">Continue</AppButton>
       </SummaryCard>
     </template>
 
@@ -346,6 +385,11 @@ function onBack(e: MouseEvent) {
 .box__title {
   font-size: var(--text-md);
   font-weight: 500;
+}
+
+.box__optional {
+  font-weight: 400;
+  color: var(--color-muted);
 }
 
 .box__tenures {
