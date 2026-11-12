@@ -93,7 +93,6 @@ export const SEO_PAGES: SeoPage[] = [
 /** CMS legal pages (`/legal/:slug`). */
 export const LEGAL_PAGES: SeoPage[] = [
   { path: '/legal/privacy-policy', title: 'Privacy Policy', description: 'How Amcom collects, uses and protects your personal information.', changefreq: 'yearly', priority: 0.3 },
-  { path: '/legal/terms-of-service', title: 'Terms of Service', description: 'The terms that govern your use of Amcom and its investment and property services.', changefreq: 'yearly', priority: 0.3 },
   { path: '/legal/cookie-policy', title: 'Cookie Policy', description: 'How Amcom uses cookies and similar technologies on amcomglobal.com.', changefreq: 'yearly', priority: 0.2 },
 ]
 

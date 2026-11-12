@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { ID_TYPE_OPTIONS, RELATIONSHIP_OPTIONS } from '@/constants/options'
+import { LEGAL_FALLBACKS } from '@/constants/site'
 import { contentService } from '@/services/api'
 import type { Lookups, Option } from '@/types'
 
@@ -37,7 +38,7 @@ export const useLookupStore = defineStore('lookups', () => {
   const relationships = computed<Option[]>(() => (data.value ? toOptions(data.value.relationships) : RELATIONSHIP_OPTIONS))
   const banks = computed<Option[]>(() => data.value?.banks.map((b) => ({ value: b.code, label: b.name })) ?? [])
   const propertyLocations = computed(() => data.value?.property_locations ?? [])
-  const buyerTermsUrl = computed(() => data.value?.legal?.buyer_terms_url || null)
+  const buyerTermsUrl = computed(() => data.value?.legal?.buyer_terms_url || LEGAL_FALLBACKS.buyerTermsUrl)
 
   function lgasFor(state: string | null | undefined): Option[] {
     if (!state) return []

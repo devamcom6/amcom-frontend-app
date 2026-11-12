@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppOptionCard from '@/components/base/AppOptionCard.vue'
+import TermsLink from '@/components/base/TermsLink.vue'
 import type { PaymentMethod } from '@/types'
 import { formatNaira } from '@/utils/format'
 
@@ -20,7 +21,7 @@ const method = ref<PaymentMethod>('bank_transfer')
     </div>
     <p class="pay__terms">
       By clicking "Pay now," you confirm you have read and agree to Amcom's
-      <RouterLink to="/legal/terms-of-service" class="pay__link">Terms of Service</RouterLink> and
+      <TermsLink class="pay__link" /> and
       <RouterLink to="/legal/privacy-policy" class="pay__link">Privacy Policy</RouterLink>.
     </p>
     <AppButton size="lg" block :loading="processing" loading-label="Redirecting to Paystack" @click="emit('pay', method)">

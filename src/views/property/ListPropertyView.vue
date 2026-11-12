@@ -10,6 +10,7 @@ import AppCurrencyInput from '@/components/base/AppCurrencyInput.vue'
 import AppErrorState from '@/components/base/AppErrorState.vue'
 import AppIcon from '@/components/base/AppIcon.vue'
 import AppInput from '@/components/base/AppInput.vue'
+import TermsLink from '@/components/base/TermsLink.vue'
 import AppModal from '@/components/base/AppModal.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
@@ -277,7 +278,7 @@ const stepIndex = computed(() => (step.value === 'details' ? 0 : 1))
           I confirm that all property details and photos provided are accurate and truthful. Misleading listings may be removed.
         </AppCheckbox>
         <p class="confirm__terms">
-          By clicking Continue, you agree to AMCOM's <RouterLink to="/legal/terms-of-service">Terms of Service</RouterLink> and
+          By clicking Continue, you agree to AMCOM's <TermsLink /> and
           <RouterLink to="/legal/privacy-policy">privacy policy</RouterLink>.
           <template v-if="fee"> A one-time registration fee of <strong>{{ formatNaira(fee.amount) }}</strong> applies.</template>
         </p>

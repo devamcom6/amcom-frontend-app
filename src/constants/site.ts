@@ -13,6 +13,11 @@ export const COMPANY = {
   parentGroup: 'Houvincity Group',
 }
 
+/** Fallbacks only: the live URLs come from GET /lookups (legal.*) so the backend can publish new versions. */
+export const LEGAL_FALLBACKS = {
+  buyerTermsUrl: 'https://res.cloudinary.com/prl3lpkk/raw/upload/v1794506071/TERMS_AND_CONDITIONS_FOR_BUYERS_UNDER_PROPERTY_LISITNG.docx',
+}
+
 export const SOCIAL_LINKS = [
   { label: 'LinkedIn', icon: 'linkedin', href: 'https://www.linkedin.com' },
   { label: 'Facebook', icon: 'facebook', href: 'https://www.facebook.com' },

@@ -5,6 +5,7 @@ import GoogleButton from '@/components/auth/GoogleButton.vue'
 import AppAlert from '@/components/base/AppAlert.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppInput from '@/components/base/AppInput.vue'
+import TermsLink from '@/components/base/TermsLink.vue'
 import { config } from '@/config/env'
 import { useForm } from '@/composables/useForm'
 import { useAuthStore } from '@/stores/auth'
@@ -88,7 +89,7 @@ async function submit() {
 
     <p class="terms">
       By continuing you agree that you have reviewed and agree to the
-      <RouterLink to="/legal/terms-of-service">Terms of Service</RouterLink> and <RouterLink to="/legal/privacy-policy">Privacy Policy</RouterLink>.
+      <TermsLink /> and <RouterLink to="/legal/privacy-policy">Privacy Policy</RouterLink>.
     </p>
     <p class="switch">
       Already have an account?

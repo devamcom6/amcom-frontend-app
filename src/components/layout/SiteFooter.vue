@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppIcon from '@/components/base/AppIcon.vue'
 import AppLogo from '@/components/base/AppLogo.vue'
+import TermsLink from '@/components/base/TermsLink.vue'
 import { COMPANY, SOCIAL_LINKS } from '@/constants/site'
 
 const columns = [
@@ -68,7 +69,7 @@ const year = new Date().getFullYear()
         <p class="footer__copy">© {{ year }} Amcom. All rights reserved.</p>
         <nav class="footer__legal" aria-label="Legal">
           <RouterLink to="/legal/privacy-policy">Privacy Policy</RouterLink>
-          <RouterLink to="/legal/terms-of-service">Terms of Service</RouterLink>
+          <TermsLink />
           <RouterLink to="/legal/cookie-policy">Cookie Policy</RouterLink>
         </nav>
         <ul class="footer__social" role="list">
