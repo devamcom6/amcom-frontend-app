@@ -139,14 +139,32 @@ run_remote() { remote "bash -s -- $(printf '%q ' "$DEPLOY_PATH" "$APP_ROOT" "$@"
 # Streams the tarball into the (already guarded, freshly created) release folder.
 extract_remote() { remote "tar -xzf - -C $(printf '%q' "$DEPLOY_PATH/releases/$1")"; }
 
+warn() {
+  if [ -n "${GITHUB_ACTIONS:-}" ]; then echo "::warning::$*"; else printf '\033[1;33m!!\033[0m %s\n' "$*"; fi
+}
+
+# 0 = site answers OK; 1 = site answers with an HTTP error (the release is suspect -> roll back);
+# 2 = site not reachable at all (DNS, firewall, nginx/SSL not set up yet). Rolling back can't fix
+#     that, since the previous release is just as unreachable, so the new release stays live.
 healthcheck() {
   [ -n "$HEALTHCHECK_URL" ] || return 0
-  log "Health check: $HEALTHCHECK_URL"
-  for i in 1 2 3 4 5; do
-    if curl -fsS -o /dev/null --max-time 10 "$HEALTHCHECK_URL"; then return 0; fi
+  local url=$HEALTHCHECK_URL code=0
+  case "$url" in http://* | https://*) ;; *) url="https://$url" ;; esac
+  log "Health check: $url"
+  for _ in 1 2 3 4 5; do
+    code=0
+    curl -fsS -o /dev/null --max-time 10 "$url" || code=$?
+    [ "$code" -eq 0 ] && return 0
     sleep 3
   done
-  return 1
+  if [ "$code" -eq 22 ]; then return 1; fi
+  case "$code" in
+    6) warn "Health check skipped: $url does not resolve. Point the domain's DNS at the VPS." ;;
+    7) warn "Health check skipped: nothing answers at $url. Check nginx and the firewall (ports 80/443)." ;;
+    35 | 51 | 60) warn "Health check skipped: HTTPS is not set up for $url yet (run certbot), or use an http:// APP_URL." ;;
+    *) warn "Health check skipped: $url is not reachable (curl exit $code)." ;;
+  esac
+  return 2
 }
 
 cmd_deploy() {
@@ -178,8 +196,14 @@ cmd_deploy() {
   log "Activating release"
   run_remote activate "$release" "$KEEP_RELEASES"
 
-  if ! healthcheck; then
-    log "Health check failed; rolling back"
+  local health=0
+  healthcheck || health=$?
+  if [ "$health" -eq 2 ]; then
+    log "Deployed $release (not verified: the site isn't publicly reachable yet)"
+    return 0
+  fi
+  if [ "$health" -ne 0 ]; then
+    log "Health check failed (HTTP error); rolling back"
     if run_remote rollback previous; then
       run_remote discard "$release" || true
       die "Deploy of $release failed its health check and was rolled back."
