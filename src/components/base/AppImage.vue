@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { Media } from '@/types'
+import AppIcon from './AppIcon.vue'
 
 /**
  * Responsive, lazy image for backend (Cloudinary) media.
@@ -59,7 +60,10 @@ const altText = computed(() => props.alt ?? props.media?.alt_text ?? '')
       @load="loaded = true"
       @error="failed = true"
     />
-    <span v-if="!media || failed" class="img__fallback" role="img" :aria-label="altText || 'Image unavailable'" />
+    <span v-if="!media || failed" class="img__fallback" role="img" :aria-label="altText ? `${altText} (photo coming soon)` : 'Photo coming soon'">
+      <AppIcon name="image" :size="28" :stroke-width="1.5" />
+      <span class="img__fallback-text" aria-hidden="true">Photo coming soon</span>
+    </span>
   </span>
 </template>
 
@@ -87,8 +91,25 @@ const altText = computed(() => props.alt ?? props.media?.alt_text ?? '')
 .img__fallback {
   position: absolute;
   inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--color-primary);
   background:
-    linear-gradient(135deg, rgba(46, 111, 98, 0.12), rgba(46, 111, 98, 0.04)),
-    #b9d6cc;
+    radial-gradient(120% 90% at 20% 0%, rgba(255, 255, 255, 0.55), transparent 60%),
+    linear-gradient(135deg, #dbe9e3, #c3dbd1);
+}
+
+.img__fallback :deep(svg) {
+  opacity: 0.7;
+}
+
+.img__fallback-text {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0.75;
 }
 </style>

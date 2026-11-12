@@ -3,7 +3,8 @@
  * The backend must sanitise on write; this is defence in depth before `v-html`.
  */
 const ALLOWED_TAGS = new Set([
-  'P', 'BR', 'STRONG', 'B', 'EM', 'I', 'U', 'UL', 'OL', 'LI', 'H2', 'H3', 'H4', 'A', 'BLOCKQUOTE', 'SPAN',
+  'P', 'BR', 'STRONG', 'B', 'EM', 'I', 'U', 'UL', 'OL', 'LI', 'H1', 'H2', 'H3', 'H4', 'A', 'BLOCKQUOTE', 'SPAN',
+  'SUP', 'SUB', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD',
 ])
 const ALLOWED_ATTRS: Record<string, string[]> = { A: ['href', 'title'] }
 

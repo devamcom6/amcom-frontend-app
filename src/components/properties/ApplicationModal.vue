@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import AppAlert from '@/components/base/AppAlert.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppCheckbox from '@/components/base/AppCheckbox.vue'
@@ -7,6 +7,7 @@ import AppInput from '@/components/base/AppInput.vue'
 import AppModal from '@/components/base/AppModal.vue'
 import AppSuccessPanel from '@/components/base/AppSuccessPanel.vue'
 import AppTextarea from '@/components/base/AppTextarea.vue'
+import TermsLink from '@/components/base/TermsLink.vue'
 import ReferrerFields from '@/components/checkout/ReferrerFields.vue'
 import { useForm } from '@/composables/useForm'
 import { propertyService } from '@/services/api'
@@ -23,10 +24,6 @@ const auth = useAuthStore()
 const ui = useUiStore()
 const lookups = useLookupStore()
 const done = ref(false)
-
-/** Versioned terms document from GET /lookups (legal.buyer_terms_url); a .docx downloads rather than opens. */
-const termsUrl = computed(() => lookups.buyerTermsUrl)
-const termsIsWordDoc = computed(() => /\.docx?(\?|#|$)/i.test(termsUrl.value ?? ''))
 
 const form = useForm(
   {
@@ -108,9 +105,7 @@ async function submit() {
       <AppTextarea v-model="form.values.message" label="Message" placeholder="Type your message here" :maxlength="1000" :error="form.errors.message" @blur="form.touch('message')" />
       <AppCheckbox v-model="form.values.accept_terms" :error="form.errors.accept_terms" class="app-terms" @update:model-value="form.touch('accept_terms')">
         I have read and understood the
-        <a v-if="termsUrl" :href="termsUrl" target="_blank" rel="noopener noreferrer" class="app-terms__link" @click.stop>Terms and Conditions</a>
-        <template v-else>Terms and Conditions</template>
-        <span v-if="termsUrl && termsIsWordDoc" class="app-terms__hint"> (Word document)</span>
+        <TermsLink title="Terms and Conditions" class="app-terms__link" />
       </AppCheckbox>
     </form>
 
@@ -136,10 +131,6 @@ async function submit() {
   color: var(--color-primary);
   font-weight: 600;
   text-decoration: underline;
-}
-
-.app-terms__hint {
-  color: var(--color-muted);
 }
 
 .app-submit {
