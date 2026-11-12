@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import AppBackLink from '@/components/base/AppBackLink.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppErrorState from '@/components/base/AppErrorState.vue'
@@ -12,10 +12,10 @@ import InspectionModal from '@/components/properties/InspectionModal.vue'
 import ListingTypeBadge from '@/components/properties/ListingTypeBadge.vue'
 import LocationMap from '@/components/properties/LocationMap.vue'
 import PropertyCard from '@/components/properties/PropertyCard.vue'
-import { config } from '@/config/env'
 import { useAsync } from '@/composables/useAsync'
 import { propertyService } from '@/services/api'
 import { formatPrice } from '@/utils/format'
+import { applySeo, setPageJsonLd } from '@/utils/seo'
 
 const props = defineProps<{ slug: string }>()
 
@@ -34,10 +34,28 @@ const features = computed(() => (showAllFeatures.value ? property.value?.feature
 
 watch(property, (p) => {
   if (!p) return
-  document.title = `${p.title} | ${config.appName}`
+  const verb = p.listing_type === 'sale' ? 'for sale' : `for ${p.listing_type}`
+  applySeo({
+    title: `${p.title} ${verb}`,
+    description: `${p.title} ${verb} in ${p.location_label || [p.city, p.state].filter(Boolean).join(', ')}: ${formatPrice(p.price, p.price_period)}. ${p.description ?? ''}`,
+    path: `/properties/${p.slug}`,
+    image: p.cover_image?.url,
+    imageAlt: p.title,
+  })
+  setPageJsonLd({
+    '@type': 'RealEstateListing',
+    name: p.title,
+    description: p.description,
+    url: window.location.origin + `/properties/${p.slug}`,
+    image: p.gallery?.length ? p.gallery.map((m) => m.url) : p.cover_image?.url,
+    offers: { '@type': 'Offer', price: p.price, priceCurrency: 'NGN', availability: 'https://schema.org/InStock' },
+    address: { '@type': 'PostalAddress', streetAddress: p.address, addressLocality: p.city, addressRegion: p.state, addressCountry: 'NG' },
+  })
   showFullDescription.value = false
   showAllFeatures.value = false
 })
+
+onBeforeUnmount(() => setPageJsonLd(null))
 
 function openGallery(i = 0) {
   galleryStart.value = i

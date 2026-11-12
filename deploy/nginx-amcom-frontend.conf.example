@@ -7,12 +7,25 @@
 # After editing:  sudo nginx -t && sudo systemctl reload nginx
 
 # -----------------------------------------------------------------------------
+# STEP 1: shared security headers, saved once as /etc/nginx/snippets/amcom-headers.conf
+#
+# nginx drops server-level add_header lines in any location that sets its own, so the
+# headers live in a snippet that every location includes.
+# -----------------------------------------------------------------------------
+# add_header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob: https://res.cloudinary.com; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://amcom.iterationplus.com; frame-src https://www.google.com https://maps.google.com; form-action 'self' https://checkout.paystack.com" always;
+# add_header X-Frame-Options "DENY" always;
+# add_header X-Content-Type-Options "nosniff" always;
+# add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+# add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+# -----------------------------------------------------------------------------
 # OPTION A (production setup): frontend on its own domain, API on its own.
 #   app: https://amcomglobal.com   API: https://amcom.iterationplus.com/api/v1
 # Save as /etc/nginx/sites-available/amcomglobal, then:
 #   sudo ln -s /etc/nginx/sites-available/amcomglobal /etc/nginx/sites-enabled/
 #   sudo nginx -t && sudo systemctl reload nginx
 #   sudo certbot --nginx -d amcomglobal.com -d www.amcomglobal.com   # adds 443 + redirects
+# If certbot already edited the file, change only the location blocks below.
 # -----------------------------------------------------------------------------
 
 # www -> apex, so there is one canonical origin (matches VITE_APP_URL / FRONTEND_URL).
@@ -29,37 +42,25 @@ server {
     root /var/www/apps/amcom/frontend/current;
     index index.html;
 
-    # Security headers (docs/FRONTEND_ARCHITECTURE.md §14). Set connect-src to your real API origin.
-    add_header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob: https://res.cloudinary.com; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://amcom.iterationplus.com; frame-src https://www.google.com https://maps.google.com; form-action 'self' https://checkout.paystack.com" always;
-    add_header X-Frame-Options "DENY" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-
     # Hashed build assets never change: cache for a year.
     location /assets/ {
-        expires 1y;
+        include snippets/amcom-headers.conf;
         add_header Cache-Control "public, max-age=31536000, immutable" always;
         try_files $uri =404;
     }
 
-    # index.html must always be fresh so a new deploy is picked up immediately.
-    location = /index.html {
-        add_header Cache-Control "no-cache" always;
-        add_header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob: https://res.cloudinary.com; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://amcom.iterationplus.com; frame-src https://www.google.com https://maps.google.com; form-action 'self' https://checkout.paystack.com" always;
-        add_header X-Frame-Options "DENY" always;
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-    }
-
-    # SPA fallback: every client-side route (/properties/x, /dashboard, ...) returns index.html.
+    # Pages: the build writes a prerendered HTML file per public page (/buyback/index.html, ...)
+    # with its own title/description/Open Graph tags for search and link-preview crawlers.
+    # `$uri/index.html` serves those directly (no /buyback -> /buyback/ redirect); any other
+    # route falls back to the SPA shell. HTML is revalidated on every visit so deploys show at once.
     location / {
-        try_files $uri $uri/ /index.html;
+        include snippets/amcom-headers.conf;
+        add_header Cache-Control "no-cache" always;
+        try_files $uri $uri/index.html /index.html;
     }
 
     gzip on;
-    gzip_types text/css application/javascript application/json image/svg+xml;
+    gzip_types text/css application/javascript application/json image/svg+xml application/xml text/plain;
 }
 
 # -----------------------------------------------------------------------------
@@ -84,11 +85,14 @@ server {
 # }
 #
 # location /assets/ {
+#     include snippets/amcom-headers.conf;
 #     expires 1y;
 #     add_header Cache-Control "public, max-age=31536000, immutable" always;
 #     try_files $uri =404;
 # }
 #
 # location / {
-#     try_files $uri $uri/ /index.html;
+#     include snippets/amcom-headers.conf;
+#     add_header Cache-Control "no-cache" always;
+#     try_files $uri $uri/index.html /index.html;
 # }

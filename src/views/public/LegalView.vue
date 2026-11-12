@@ -2,18 +2,23 @@
 import { computed, watch } from 'vue'
 import AppErrorState from '@/components/base/AppErrorState.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
-import { config } from '@/config/env'
+import { LEGAL_PAGES } from '@/constants/seo'
 import { useAsync } from '@/composables/useAsync'
 import { contentService } from '@/services/api'
 import { formatDate } from '@/utils/format'
 import { sanitizeHtml } from '@/utils/sanitize'
+import { applySeo } from '@/utils/seo'
 
 const props = defineProps<{ slug: string }>()
 const { data: page, loading, error, execute } = useAsync(() => contentService.page(props.slug), {
   watch: [() => props.slug],
 })
 const safeHtml = computed(() => (page.value ? sanitizeHtml(page.value.body_html) : ''))
-watch(page, (p) => p && (document.title = `${p.title} | ${config.appName}`))
+watch(page, (p) => {
+  if (!p) return
+  const known = LEGAL_PAGES.find((l) => l.path === `/legal/${props.slug}`)
+  applySeo({ title: p.title, description: known?.description ?? `${p.title} for Amcom Asset Management.`, path: `/legal/${props.slug}` })
+})
 </script>
 
 <template>

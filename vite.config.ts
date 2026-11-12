@@ -2,6 +2,7 @@ import { rmSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { seoPlugin } from './scripts/vite-seo-plugin'
 
 /** Mock-API imagery is only needed when VITE_USE_MOCK_API=true; strip it from real builds. */
 function stripMockMedia(enabled: boolean): Plugin {
@@ -18,7 +19,15 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
-    plugins: [vue(), stripMockMedia(env.VITE_USE_MOCK_API === 'true')],
+    plugins: [
+      vue(),
+      stripMockMedia(env.VITE_USE_MOCK_API === 'true'),
+      seoPlugin({
+        siteUrl: env.VITE_APP_URL || 'http://localhost:5173',
+        apiBaseUrl: env.VITE_API_BASE_URL || '',
+        includeDynamic: env.VITE_USE_MOCK_API !== 'true',
+      }),
+    ],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

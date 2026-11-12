@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { onBeforeUnmount, ref, watch } from 'vue'
 import AppBackLink from '@/components/base/AppBackLink.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppErrorState from '@/components/base/AppErrorState.vue'
@@ -8,9 +8,9 @@ import AppImage from '@/components/base/AppImage.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import GalleryModal from '@/components/properties/GalleryModal.vue'
 import LocationMap from '@/components/properties/LocationMap.vue'
-import { config } from '@/config/env'
 import { useAsync } from '@/composables/useAsync'
 import { buybackService } from '@/services/api'
+import { applySeo, setPageJsonLd } from '@/utils/seo'
 
 const props = defineProps<{ slug: string }>()
 const { data: estate, loading, error, execute } = useAsync(() => buybackService.estate(props.slug), {
@@ -18,7 +18,26 @@ const { data: estate, loading, error, execute } = useAsync(() => buybackService.
 })
 const galleryOpen = ref(false)
 
-watch(estate, (e) => e && (document.title = `${e.name} | ${config.appName}`))
+watch(estate, (e) => {
+  if (!e) return
+  const where = [e.location.city, e.location.state].filter(Boolean).join(', ')
+  applySeo({
+    title: `${e.name}, ${where}: Land Buyback Plots`,
+    description: `${e.name} in ${where}. Buy plots from ₦${e.price_from.toLocaleString('en-NG')} with ${e.roi_min_percent}–${e.roi_max_percent}% contract-backed returns over ${e.tenure_min_months}–${e.tenure_max_months} months. ${e.description ?? ''}`,
+    path: `/buyback/estates/${e.slug}`,
+    image: e.cover_image?.url,
+    imageAlt: e.name,
+  })
+  setPageJsonLd({
+    '@type': 'Place',
+    name: e.name,
+    description: e.description,
+    image: e.cover_image?.url,
+    address: { '@type': 'PostalAddress', streetAddress: e.location.address ?? undefined, addressLocality: e.location.city, addressRegion: e.location.state, addressCountry: 'NG' },
+    ...(e.location.latitude && e.location.longitude ? { geo: { '@type': 'GeoCoordinates', latitude: e.location.latitude, longitude: e.location.longitude } } : {}),
+  })
+})
+onBeforeUnmount(() => setPageJsonLd(null))
 </script>
 
 <template>

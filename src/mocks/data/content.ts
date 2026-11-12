@@ -68,7 +68,7 @@ export function seedFaqs(): FaqItem[] {
 
 export function seedPages(): CmsPage[] {
   const body = (topic: string) =>
-    `<h2>Overview</h2><p>This ${topic} explains how Amcom handles your information and your use of our services. It is maintained by our legal team and published from the Amcom content management system.</p><h3>Your responsibilities</h3><ul><li>Provide accurate information when creating an account.</li><li>Keep your login credentials confidential.</li><li>Contact <a href="mailto:hello@amcom.com">hello@amcom.com</a> with any questions.</li></ul><h3>Updates</h3><p>We may update this ${topic} from time to time. Material changes will be communicated by email.</p>`
+    `<h2>Overview</h2><p>This ${topic} explains how Amcom handles your information and your use of our services. It is maintained by our legal team and published from the Amcom content management system.</p><h3>Your responsibilities</h3><ul><li>Provide accurate information when creating an account.</li><li>Keep your login credentials confidential.</li><li>Contact <a href="mailto:admin@amcomglobal.com">admin@amcomglobal.com</a> with any questions.</li></ul><h3>Updates</h3><p>We may update this ${topic} from time to time. Material changes will be communicated by email.</p>`
   const updated = '2026-01-15T09:00:00Z'
   return [
     { slug: 'privacy-policy', title: 'Privacy Policy', body_html: body('policy'), updated_at: updated },

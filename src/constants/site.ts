@@ -7,7 +7,7 @@ export const COMPANY = {
     'Amcom is your trusted partner in real estate. We connect buyers, sellers, and renters with exceptional properties through innovative technology and personalized service.',
   address: '24 Marina Road, Victoria Island, Lagos, Nigeria.',
   phone: '+234-801-234-5678',
-  email: 'hello@amcom.com',
+  email: 'admin@amcomglobal.com',
   supportEmail: config.supportEmail,
   supportPhone: config.supportPhone,
   parentGroup: 'Houvincity Group',

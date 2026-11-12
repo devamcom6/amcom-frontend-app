@@ -1,6 +1,6 @@
 import type { NavigationGuardWithThis, RouteLocationNormalized, Router } from 'vue-router'
-import { config } from '@/config/env'
 import { useAuthStore } from '@/stores/auth'
+import { applySeo } from '@/utils/seo'
 
 /**
  * Client-side access control. This is a UX layer only — Laravel independently
@@ -49,12 +49,21 @@ export const accessGuard: NavigationGuardWithThis<undefined> = async (to) => {
   return true
 }
 
-export function setDocumentTitle(to: RouteLocationNormalized) {
-  const title = [...to.matched].reverse().find((r) => r.meta.title)?.meta.title
-  document.title = title ? `${title} | ${config.appName}` : config.appName
+/**
+ * Route-level SEO: title, description, canonical, robots. Pages with data-driven
+ * metadata (estate, property, legal) refine it with applySeo() once their data loads.
+ */
+export function setRouteSeo(to: RouteLocationNormalized) {
+  const nearest = <K extends 'title' | 'description'>(key: K) => [...to.matched].reverse().find((r) => r.meta[key])?.meta[key]
+  applySeo({
+    title: nearest('title'),
+    description: nearest('description'),
+    path: to.path,
+    noindex: to.matched.some((r) => r.meta.noindex || r.meta.requiresAuth || r.meta.guestOnly),
+  })
 }
 
 export function installGuards(router: Router) {
   router.beforeEach(accessGuard)
-  router.afterEach((to) => setDocumentTitle(to))
+  router.afterEach((to) => setRouteSeo(to))
 }
