@@ -39,6 +39,9 @@ export interface Lookups {
   property_locations: string[]
   /** Versioned legal documents. Read the URL from here; never hardcode it (a new version is a backend setting). */
   legal?: {
+    /** .docx — rendered in the in-page Terms dialog. */
     buyer_terms_url: string | null
+    /** PDF of the same terms — used for "Download" and "open in new tab". Optional until the backend adds it. */
+    buyer_terms_pdf_url?: string | null
   }
 }

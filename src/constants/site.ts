@@ -16,6 +16,15 @@ export const COMPANY = {
 /** Fallbacks only: the live URLs come from GET /lookups (legal.*) so the backend can publish new versions. */
 export const LEGAL_FALLBACKS = {
   buyerTermsUrl: 'https://res.cloudinary.com/prl3lpkk/raw/upload/v1794506071/TERMS_AND_CONDITIONS_FOR_BUYERS_UNDER_PROPERTY_LISITNG.docx',
+  buyerTermsPdfUrl: 'https://res.cloudinary.com/prl3lpkk/image/upload/v1794512956/TERMS_AND_CONDITIONS_FOR_BUYERS_UNDER_PROPERTY_LISITNG.pdf',
+}
+
+/**
+ * Cloudinary URL that downloads instead of opening (`fl_attachment`), with a friendly file name.
+ * Non-Cloudinary URLs are returned unchanged.
+ */
+export function cloudinaryDownloadUrl(url: string, fileName: string): string {
+  return url.replace(/^(https:\/\/res\.cloudinary\.com\/[^/]+\/(?:image|raw|video)\/upload\/)/, `$1fl_attachment:${encodeURIComponent(fileName)}/`)
 }
 
 export const SOCIAL_LINKS = [

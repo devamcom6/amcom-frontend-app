@@ -5,8 +5,11 @@ import AppModal from './AppModal.vue'
 import AppSkeleton from './AppSkeleton.vue'
 import { loadDocxHtml } from '@/utils/docx'
 
-/** Shows a Word document (e.g. Terms of Service) in a readable dialog, with a download fallback. */
-const props = withDefaults(defineProps<{ url: string; title?: string }>(), { title: 'Terms of Service' })
+/**
+ * Shows a Word document (e.g. Terms of Service) in a readable dialog.
+ * `pdfUrl` (optional) is offered for reading in a new tab and, via `downloadUrl`, for saving.
+ */
+const props = withDefaults(defineProps<{ url: string; title?: string; pdfUrl?: string; downloadUrl?: string }>(), { title: 'Terms of Service' })
 const open = defineModel<boolean>('open', { default: false })
 
 const html = ref('')
@@ -48,7 +51,7 @@ watch(
       <div v-else-if="failed" class="doc__error">
         <p>We couldn't display the document here.</p>
         <p>
-          <a :href="url" target="_blank" rel="noopener noreferrer">Download it to read</a>, or
+          <a :href="pdfUrl || url" target="_blank" rel="noopener noreferrer">{{ pdfUrl ? 'Open it as a PDF' : 'Download it to read' }}</a>, or
           <button type="button" class="doc__retry" @click="load">try again</button>.
         </p>
       </div>
@@ -58,7 +61,7 @@ watch(
 
     <template #footer>
       <div class="doc__actions">
-        <AppButton variant="outline" :href="url" target="_blank" rel="noopener noreferrer" icon-left="download">Download</AppButton>
+        <AppButton variant="outline" :href="downloadUrl || pdfUrl || url" rel="noopener" icon-left="download">{{ pdfUrl ? 'Download PDF' : 'Download' }}</AppButton>
         <AppButton @click="open = false">Close</AppButton>
       </div>
     </template>
